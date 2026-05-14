@@ -205,6 +205,16 @@ Lists the artifact tree for the run.
 
 Returns a file under `data/runs/{run_id}/`. The backend must reject path traversal.
 
+### `GET /api/runs/{run_id}/report?format=json|html|pdf`
+
+Downloads a generated report file from `data/runs/{run_id}/`.
+
+- `json` serves `report.json`;
+- `html` serves `report.html`;
+- `pdf` is accepted only when `report.pdf` exists. The MVP does not generate PDF by default.
+
+Missing report files return `404`. This endpoint is only a file export surface; it does not implement cloud storage or deferred report generation.
+
 ## Mutations
 
 ### `POST /api/mutations/generate`
@@ -257,9 +267,15 @@ Response:
 ```json
 {
   "models": {
-    "text_llm_provider": "deepseek",
+    "text_llm_provider": "openai_compatible",
+    "openai_compatible_provider_name": "Codex API",
+    "openai_compatible_home_url": "https://openai.com",
+    "openai_compatible_base_url": "https://api.openai.com/v1",
+    "openai_compatible_model": "gpt-5.5",
+    "openai_compatible_note": "",
+    "openai_compatible_api_key_configured": true,
     "deepseek_model": "deepseek-v4-pro",
-    "deepseek_api_key_configured": true,
+    "deepseek_api_key_configured": false,
     "browser_use_model": "bu-latest",
     "browser_use_api_key_configured": false,
     "browser_use_llm_fallback_enabled": false,
@@ -272,19 +288,20 @@ Response:
 
 ### `PATCH /api/settings`
 
-Updates runtime settings. Secret fields are write-only. The MVP must reject `browser_use_cloud_browser_enabled=true`.
+Updates runtime settings and persists model-related fields to repository root `.env`. Secret fields are write-only; an empty API key does not overwrite an existing key. The MVP must reject `browser_use_cloud_browser_enabled=true`.
 
 Request:
 
 ```json
 {
   "models": {
-    "text_llm_provider": "browser_use",
-    "deepseek_model": "deepseek-v4-pro",
-    "deepseek_api_key": null,
-    "browser_use_model": "bu-latest",
-    "browser_use_api_key": "write-only-new-key",
-    "browser_use_llm_fallback_enabled": false,
+    "text_llm_provider": "openai_compatible",
+    "openai_compatible_provider_name": "Clauddy",
+    "openai_compatible_home_url": "https://clauddy.com",
+    "openai_compatible_base_url": "https://clauddy.com/v1",
+    "openai_compatible_api_key": "write-only-new-key",
+    "openai_compatible_model": "gpt-5.5",
+    "openai_compatible_note": "公司专用账号",
     "browser_use_cloud_browser_enabled": false,
     "glm_vision_model": "glm-4.6v",
     "glm_api_key": null
@@ -296,7 +313,7 @@ Response returns the same shape as `GET /api/settings`, with no secret values.
 
 ### `GET /api/doctor`
 
-Environment readiness check used by the frontend settings drawer. Verifies selected text model provider keys, GLM vision key, browser-use installation, database, ChromaDB, and artifact root.
+Environment readiness check used by the frontend settings drawer. Verifies OpenAI-compatible text model settings, legacy provider keys, GLM vision key, browser-use installation, database, ChromaDB, and artifact root.
 
 Response:
 
@@ -304,8 +321,9 @@ Response:
 {
   "status": "ok",
   "checks": {
-    "text_llm_provider": {"status": "ok", "detail": "deepseek"},
-    "deepseek_api": {"status": "ok", "detail": "key configured for deepseek-v4-pro"},
+    "text_llm_provider": {"status": "ok", "detail": "openai_compatible"},
+    "openai_compatible_api": {"status": "ok", "detail": "key configured for Codex API / gpt-5.5"},
+    "deepseek_api": {"status": "warning", "detail": "not selected"},
     "browser_use_llm": {"status": "warning", "detail": "not selected"},
     "browser_use_cloud_browser": {"status": "ok", "detail": "disabled for MVP"},
     "glm_vision_api": {"status": "ok", "detail": "key configured"},

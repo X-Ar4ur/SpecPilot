@@ -69,14 +69,14 @@ Backend:
 - GLM vision verifier adapter parses valid JSON;
 - GLM confidence thresholds produce pass/fail/needs_review correctly;
 - mutation endpoint returns a valid stub schema.
-- settings endpoint never returns secret values and rejects `browser_use_cloud_browser_enabled=true` in the MVP.
+- settings endpoint writes model settings to `.env`, never returns secret values, preserves existing API keys when submitted empty, and rejects `browser_use_cloud_browser_enabled=true` in the MVP.
 
 Frontend:
 
 - navigation renders all required routes;
 - scenario table renders steps, expectations, evidence, and JSON detail;
 - live run page handles `node_status`, `browser_step`, `browser_frame`, `verification`, and `classification` events;
-- settings form stores text provider choice, model names, optional Browser Use hosted LLM fallback, and execution configuration without exposing secret values.
+- settings form exposes one OpenAI-compatible text model configuration, supports preset field filling, and saves without exposing secret values.
 
 ## Required Integration Tests
 
@@ -89,8 +89,10 @@ Frontend:
 
 ## Required Configuration Tests
 
-- default text provider is `deepseek`;
+- default text provider is `openai_compatible`;
+- default OpenAI-compatible model is `gpt-5.5`;
 - default DeepSeek model is `deepseek-v4-pro`;
+- `OPENAI_COMPATIBLE_API_KEY` may be empty at startup, but selected-provider readiness reports a Doctor warning until configured;
 - `BROWSER_USE_API_KEY` is optional unless `TEXT_LLM_PROVIDER=browser_use` or Browser Use LLM fallback is enabled;
 - Browser Use hosted LLM selection does not enable Browser Use Cloud Browser, `use_cloud=True`, `@sandbox`, or `cdp_url`.
 
@@ -113,6 +115,26 @@ When credentials and model keys are configured, run these scenarios through brow
 - medium scenario pass rate >= 60%;
 - at least 6 failure categories represented in real or seeded failure examples;
 - all generated scenarios remain zero-locator.
+
+## Milestone 9 Local Acceptance Checklist
+
+Run from the repository root unless noted:
+
+```bash
+uv run python -m specpilot_backend.scripts.seed_demo
+uv run uvicorn specpilot_backend.main:app --host 127.0.0.1 --port 8000
+```
+
+Then check:
+
+- `GET /api/doctor` reports database, ChromaDB persist dir, artifact root, browser-use install state, model key status, and `browser_use_cloud_browser` as disabled for MVP;
+- the seeded demo set includes the six required E2E acceptance scenarios: create board, create list, create card, edit card, drag card, and switch view;
+- every generated or seeded scenario passes the zero-locator validator;
+- Browser Use hosted LLM remains an optional text provider/fallback only and never enables Browser Use Cloud Browser, `use_cloud=True`, `@sandbox`, or `cdp_url`;
+- each completed run has `trace.jsonl`, `report.json`, and `report.html` under `data/runs/{run_id}/`;
+- the run detail page exposes report export links for JSON and HTML when those files exist.
+
+The six browser-use E2E scenarios require real 4ga demo credentials, live network access to 4ga, DeepSeek V4 Pro or explicitly selected Browser Use hosted LLM credentials, and GLM-4.6V credentials when visual checks are required.
 
 ## Documentation Checks
 

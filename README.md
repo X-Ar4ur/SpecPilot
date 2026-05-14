@@ -30,7 +30,59 @@ image/                     Existing project assets
 
 Create a `.env` file from `.env.example` before running the app.
 
-The exact setup commands are defined milestone by milestone in `docs/IMPLEMENTATION_PLAN.md`. Do not install extra major frameworks unless the implementation plan is updated first.
+Use the project-level uv environment at the repository root:
+
+```bash
+uv venv --python 3.12 .venv
+uv sync
+```
+
+Run the backend from the repository root:
+
+```bash
+uv run uvicorn specpilot_backend.main:app --host 127.0.0.1 --port 8000
+```
+
+Seed the local demo acceptance scenarios:
+
+```bash
+uv run python -m specpilot_backend.scripts.seed_demo
+```
+
+Run the Chinese control console:
+
+```bash
+cd frontend
+pnpm install
+pnpm dev --hostname 127.0.0.1 --port 3000
+```
+
+The frontend proxies `/api/*` to `http://127.0.0.1:8000` through `next.config.mjs` when `NEXT_PUBLIC_API_BASE_URL` is not set. Keep Browser Use hosted LLM as an explicit optional text provider or fallback only; setting `BROWSER_USE_API_KEY` must not enable Browser Use Cloud Browser.
+
+## Local Acceptance
+
+Check local readiness:
+
+```bash
+uv run python -m specpilot_backend.scripts.seed_demo
+uv run uvicorn specpilot_backend.main:app --host 127.0.0.1 --port 8000
+curl http://127.0.0.1:8000/api/doctor
+```
+
+Run the automated acceptance gate:
+
+```bash
+uv run pytest
+uv run ruff check .
+uv run pyright
+
+cd frontend
+pnpm lint
+pnpm typecheck
+pnpm build
+```
+
+Manual E2E acceptance still requires real 4ga demo credentials, live 4ga access, DeepSeek V4 Pro credentials for text generation or execution, and GLM-4.6V credentials for visual verification. Generated scenarios must remain zero-locator, and run artifacts must include `trace.jsonl`, `report.json`, and `report.html` under `data/runs/{run_id}/`.
 
 ## Agent Handoff
 

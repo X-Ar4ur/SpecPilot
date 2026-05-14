@@ -155,7 +155,7 @@ Implement:
 - Pydantic/SQLModel models matching `docs/SCHEMAS.md`;
 - scenario validator that recursively rejects forbidden locator fields;
 - ID helpers for `ft_`, `sc_`, `run_`, `crawl_`, `idx_`, `job_`.
-- text LLM provider settings: `TEXT_LLM_PROVIDER=deepseek` by default, `DEEPSEEK_MODEL=deepseek-v4-pro`, optional `browser_use` provider using `BROWSER_USE_API_KEY` and `BROWSER_USE_MODEL`.
+- text LLM provider settings: `TEXT_LLM_PROVIDER=openai_compatible` by default, `OPENAI_COMPATIBLE_BASE_URL`, `OPENAI_COMPATIBLE_API_KEY`, and `OPENAI_COMPATIBLE_MODEL`; legacy `deepseek` and optional `browser_use` provider settings remain readable for compatibility.
 - `BROWSER_USE_CLOUD_BROWSER_ENABLED` must default to `false` and must not be used by MVP run execution.
 
 Test requirements:
@@ -164,7 +164,7 @@ Test requirements:
 - any nested `selector`, `locator`, `xpath`, `element_id`, `element_index`, `css_selector` field fails;
 - `.env.example` keys map to settings fields;
 - default confidence thresholds are `0.85` and `0.60`.
-- default text provider is DeepSeek and default DeepSeek model is `deepseek-v4-pro`;
+- default text provider is OpenAI-compatible, default OpenAI-compatible model is `gpt-5.5`, and default DeepSeek compatibility model is `deepseek-v4-pro`;
 - Browser Use hosted LLM key is optional unless `TEXT_LLM_PROVIDER=browser_use` or fallback is enabled.
 
 Acceptance:
@@ -420,7 +420,7 @@ Implement:
 - scenario table, filters, detail drawer, JSON viewer, run button;
 - run history and run detail pages;
 - API client typed from `docs/SCHEMAS.md`.
-- settings drawer for text provider selection: DeepSeek V4 Pro by default, optional Browser Use hosted LLM via `BROWSER_USE_API_KEY`, and GLM-4.6V vision settings. Secret fields must display only configured/empty states and must never render existing secret values.
+- settings drawer with a single OpenAI-compatible text model form, presets for Codex API / gateway, OpenAI, and DeepSeek field filling, plus GLM-4.6V vision settings. Secret fields must display only configured/empty states and must never render existing secret values.
 
 Acceptance:
 

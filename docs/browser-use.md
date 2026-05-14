@@ -4,8 +4,8 @@
 
 This file vendors upstream browser-use guidance for API lookup. When it conflicts with `PLANv2.md`, `AGENTS.md`, or the current user instruction, follow the SpecPilot project contract first.
 
-- Default text LLM: DeepSeek V4 Pro via `langchain-deepseek` (`DEEPSEEK_MODEL=deepseek-v4-pro`).
-- Optional text LLM: Browser Use hosted LLM via `BROWSER_USE_API_KEY` and `BROWSER_USE_MODEL`, only when the frontend/settings explicitly select it as provider or fallback.
+- Default text LLM: OpenAI-compatible / Codex API through `OPENAI_COMPATIBLE_BASE_URL`, `OPENAI_COMPATIBLE_API_KEY`, and `OPENAI_COMPATIBLE_MODEL`.
+- Compatibility text LLMs: DeepSeek V4 Pro via `langchain-deepseek`, and Browser Use hosted LLM via `BROWSER_USE_API_KEY` and `BROWSER_USE_MODEL`, only when the frontend/settings explicitly select them as provider or fallback.
 - `BROWSER_USE_API_KEY` does not enable Browser Use Cloud Browser by itself in this project.
 - MVP browser execution stays local browser-use Managed Browser. Do not use `use_cloud=True`, `@sandbox`, `cdp_url`, Real Browser mode, or Cloud Browser unless a later user instruction changes the architecture.
 - If this file does not answer a browser-use integration question, check the official docs at `https://docs.browser-use.com/` before writing code. Do not invent API names, callback hooks, configuration keys, or model adapter shapes from memory.

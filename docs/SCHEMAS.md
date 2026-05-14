@@ -163,7 +163,12 @@ class VerificationResult:
 
 ```python
 class ModelSettings:
-    text_llm_provider: Literal["deepseek", "browser_use"]
+    text_llm_provider: Literal["openai_compatible", "deepseek", "browser_use"]
+    openai_compatible_provider_name: str = "Codex API"
+    openai_compatible_home_url: str = "https://openai.com"
+    openai_compatible_base_url: str = "https://api.openai.com/v1"
+    openai_compatible_model: str = "gpt-5.5"
+    openai_compatible_note: str | None = None
     deepseek_model: str = "deepseek-v4-pro"
     browser_use_model: str = "bu-latest"
     browser_use_llm_fallback_enabled: bool = False
@@ -173,10 +178,11 @@ class ModelSettings:
 
 Rules:
 
-- `deepseek` is the default text provider.
+- `openai_compatible` is the default text provider and supports Codex API, OpenAI, DeepSeek-compatible gateways, and other OpenAI-compatible `/v1/chat/completions` endpoints through `base_url + api_key + model`.
+- `deepseek` is retained as a legacy compatibility provider.
 - `browser_use` means Browser Use hosted LLM through `BROWSER_USE_API_KEY`; it does not mean Browser Use Cloud Browser.
 - `browser_use_cloud_browser_enabled` must remain `False` in the MVP.
-- Secret values such as `DEEPSEEK_API_KEY`, `BROWSER_USE_API_KEY`, and `GLM_API_KEY` are never returned to the frontend, logs, traces, scenarios, screenshots metadata, or reports.
+- Secret values such as `OPENAI_COMPATIBLE_API_KEY`, `DEEPSEEK_API_KEY`, `BROWSER_USE_API_KEY`, and `GLM_API_KEY` are never returned to the frontend, logs, traces, scenarios, screenshots metadata, or reports.
 
 ## Verification Failure (input to FailureClassifier)
 

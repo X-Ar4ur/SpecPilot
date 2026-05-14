@@ -18,8 +18,8 @@ FastAPI Backend
 
 ## Model Providers
 
-- Default text provider: DeepSeek V4 Pro via `langchain-deepseek`, with `DEEPSEEK_MODEL=deepseek-v4-pro`.
-- Optional text provider/fallback: Browser Use hosted LLM via `BROWSER_USE_API_KEY` and `BROWSER_USE_MODEL`, only when explicitly selected.
+- Default text provider: OpenAI-compatible / Codex API via `OPENAI_COMPATIBLE_BASE_URL`, `OPENAI_COMPATIBLE_API_KEY`, and `OPENAI_COMPATIBLE_MODEL`.
+- Legacy text providers remain readable for compatibility: DeepSeek V4 Pro via `langchain-deepseek`, and Browser Use hosted LLM via `BROWSER_USE_API_KEY` and `BROWSER_USE_MODEL` only when explicitly selected.
 - Browser execution mode remains local browser-use Managed Browser in MVP. Selecting Browser Use hosted LLM must not enable Browser Use Cloud Browser, `use_cloud=True`, `@sandbox`, or `cdp_url`.
 - Vision verifier: GLM-4.6V through the backend adapter.
 
@@ -43,7 +43,7 @@ Layout:
 - top bar: product name, global run status, model status, notifications, settings button;
 - collapsible left navigation: workbench, features, scenarios, live runs, run history;
 - main content area: current route.
-- settings drawer: text provider segmented control (`DeepSeek V4 Pro` default, `Browser Use hosted LLM` optional), model names, write-only API key inputs, GLM-4.6V thresholds, and execution settings. Existing secrets must be shown only as configured/empty states.
+- settings drawer: one OpenAI-compatible provider form with provider name, note, home URL, write-only API key, API request base URL, and model name; presets may fill Codex API / gateway, OpenAI, or DeepSeek defaults without adding provider tabs. Existing secrets must be shown only as configured/empty states.
 
 Visual direction:
 

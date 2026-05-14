@@ -48,7 +48,7 @@ The system must:
 
 - execute generated scenarios against 4ga Boards demo;
 - use an LLM web agent to plan and perform browser interactions;
-- use DeepSeek V4 Pro as the default text model, with Browser Use hosted LLM via `BROWSER_USE_API_KEY` available only as an explicitly selected provider/fallback;
+- use OpenAI-compatible / Codex API settings as the default text model path, with DeepSeek and Browser Use hosted LLM settings retained only as explicit compatibility paths;
 - keep execution context and trace history;
 - verify execution completeness and functional correctness;
 - output pass/fail/needs_review;

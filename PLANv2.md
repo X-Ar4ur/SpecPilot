@@ -140,7 +140,7 @@ DOM / 语义校验 + GLM-4.6V 视觉验证
 顶部系统设置：
 
 - 右上角齿轮图标打开设置抽屉。
-- 配置文本模型 provider：默认 `DeepSeek V4 Pro`（`langchain-deepseek` + `DEEPSEEK_API_KEY` + `DEEPSEEK_MODEL=deepseek-v4-pro`），也可显式切换到 Browser Use 托管 LLM（`BROWSER_USE_API_KEY` + `BROWSER_USE_MODEL`）。
+- 配置文本模型 provider：默认 `openai_compatible`（Codex API / OpenAI-compatible endpoint，通过 `OPENAI_COMPATIBLE_BASE_URL` + `OPENAI_COMPATIBLE_API_KEY` + `OPENAI_COMPATIBLE_MODEL`），保留旧 `deepseek` 与 Browser Use 托管 LLM 配置读取兼容。
 - Browser Use 托管 LLM 仅作为文本模型 provider / fallback 选项；不等于启用 Browser Use Cloud Browser。浏览器执行默认仍是本地 Managed Browser，除非后续非 MVP 明确新增云浏览器模式。
 - 配置 `GLM-4.6V`、目标文档 URL、目标应用 URL。
 - 配置浏览器模式、最大重试次数、截图频率、Agent 单场景最大步数上限。
@@ -778,9 +778,15 @@ browser = Browser(
 ```python
 from browser_use import Agent, Browser, Tools
 from browser_use import ChatBrowserUse
-from langchain_deepseek import ChatDeepSeek
 
 def build_text_llm(settings):
+    if settings.TEXT_LLM_PROVIDER == "openai_compatible":
+        return OpenAICompatibleBrowserUseModel(
+            base_url=settings.OPENAI_COMPATIBLE_BASE_URL,
+            api_key=settings.OPENAI_COMPATIBLE_API_KEY,
+            model=settings.OPENAI_COMPATIBLE_MODEL,
+        )
+
     if settings.TEXT_LLM_PROVIDER == "browser_use":
         # Requires BROWSER_USE_API_KEY. This changes only the LLM provider,
         # not the browser execution mode.
@@ -859,7 +865,7 @@ async def run_browser_use(scenario, event_bus, run_id):
 ### 约束清单
 
 - `tools=Tools()` 显式传入空实例以表明设计意图，而非依赖默认行为。
-- 默认 LLM 客户端选 `langchain-deepseek` + `DEEPSEEK_MODEL=deepseek-v4-pro`。
+- 默认 LLM 客户端选 OpenAI-compatible / Codex API，使用 `OPENAI_COMPATIBLE_BASE_URL` + `OPENAI_COMPATIBLE_MODEL`。
 - `BROWSER_USE_API_KEY` 可以作为可替换方案：当前端设置 `TEXT_LLM_PROVIDER=browser_use` 时，后端使用 `ChatBrowserUse(model=BROWSER_USE_MODEL)` 作为 browser-use Agent 的 LLM。
 - `BROWSER_USE_API_KEY` 的使用范围仅限 Browser Use 托管 LLM provider / fallback，不得自动启用 Browser Use Cloud Browser。
 - MVP 不使用 Browser Use Cloud Browser：不使用 `@sandbox` 装饰器、不传 `use_cloud=True`、不连接 `cdp_url=`，全程本地 Managed Browser 模式。
@@ -1595,7 +1601,7 @@ E2E 验收（全部由 browser-use 通用能力完成，无专用 Tool）：
 - UI 默认中文。
 - 系统设置入口放在顶部栏右侧，不放入侧边栏。
 - 视觉模型固定为 `GLM-4.6V`。
-- 文本模型默认使用 `DeepSeek V4 Pro`，模型 ID 为 `deepseek-v4-pro`。
+- 文本模型默认使用 OpenAI-compatible / Codex API，默认模型 ID 为 `gpt-5.5`；`DeepSeek V4 Pro` 作为兼容路径保留。
 - 不修改 browser-use 核心源码，不 fork 仓库。通过 PyPI 标准依赖集成，版本 pin 到 `browser-use>=0.12.6,<0.13`。
 - LangGraph 不重做 browser-use 的 Agent 内部 loop。Plan/Execute 由 browser-use 承担，LangGraph 编排 trace 收集、双通道验证、失败分类、修补、报告等执行**之后**的环节。
 - 不引入 Playwright；browser-use 通用能力（含拖拽）经实测足以覆盖 4ga 全部核心交互。
@@ -1605,4 +1611,4 @@ E2E 验收（全部由 browser-use 通用能力完成，无专用 Tool）：
 - 浏览器始终以 `headless=True` + `user_data_dir=None` 启动，确保每次执行环境干净；通过 `allowed_domains=['*.4gaboards.com']` 限制 Agent 漫游。
 - 执行过程页右侧的浏览器实时画面 MVP 采用 per-step 截图方案，复用 browser-use 内置截图，通过 SSE `browser_frame` 事件推送；CDP screencast 视频流为 P2 增强项，独立 WebSocket 端点 `/api/runs/{run_id}/screencast`，与 SSE 通道并存且互不依赖。
 - 凭据通过 `.env` 配置并经 browser-use `sensitive_data` 机制注入；先走"场景化登录"主路径，必要时升级为 `storage_state` 持久化。绝不在 task 字符串或场景 JSON 中明文写入凭据。
-- 默认 LLM 通过 `langchain-deepseek` 接入 DeepSeek V4 Pro；当前端设置选择 Browser Use 托管 LLM 时，可用 `BROWSER_USE_API_KEY` + `ChatBrowserUse` 作为可替换方案，但仍保持本地 Managed Browser 执行。
+- 默认 LLM 通过 OpenAI-compatible / Codex API adapter 接入；旧 DeepSeek 与 Browser Use hosted LLM 设置仅作为显式兼容路径，但仍保持本地 Managed Browser 执行。
