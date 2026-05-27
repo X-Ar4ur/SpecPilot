@@ -1,7 +1,0 @@
-﻿Template audit
-- Source deck: UCAS blue-white academic template, 17 slides, 16:9 1280x720 render size.
-- Reusable patterns: cover (slide 1), agenda (slide 3), chapter divider (slides 4/6/10/13/15), content slides with top navigation and page number (slides 4/5/7/8/9/11/14/16), ending slide (17).
-- Output strategy: duplicate source template slides and fill the central content area with editable text, shapes, icons, arrows, and simple charts. Chapter 3 image-derived pages reuse source slide 11 so the active navigation tab remains aligned with the framework section.
-- Typography: preserve template visual grammar: UCAS blue, Microsoft YaHei/SimHei style Chinese hierarchy, blue top navigation, compact academic content density.
-- Assets: keep inherited UCAS logo and template chrome; do not replace school marks.
-- Insertion contract: new primitives are constrained to blank body regions below the inherited header/title area. No domain-specific browser-use or Playwright claims are introduced beyond the approved comparison content.
