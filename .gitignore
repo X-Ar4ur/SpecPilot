@@ -40,3 +40,9 @@ docs/report.html
 Thumbs.db
 .idea/
 .vscode/
+
+/outputs
+/ppt_images
+/PPT输出
+/tools
+
