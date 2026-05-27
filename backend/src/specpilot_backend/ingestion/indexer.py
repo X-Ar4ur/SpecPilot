@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
@@ -39,7 +40,14 @@ def index_chunks(
 
 def _chunk_id(chunk: ManualChunk) -> str:
     digest = str(chunk.metadata["content_hash"]).removeprefix("sha256:")
-    return f"chunk_{digest[:24]}"
+    identity_parts = (
+        str(chunk.metadata.get("source_url", "")),
+        str(chunk.metadata.get("heading_path", "")),
+        str(chunk.metadata.get("chunk_index_in_page", "")),
+        str(chunk.metadata.get("chunk_split_index", "")),
+    )
+    identity = hashlib.sha256("|".join(identity_parts).encode("utf-8")).hexdigest()
+    return f"chunk_{digest[:24]}_{identity[:12]}"
 
 
 def _sanitize_metadata(metadata: dict[str, Any]) -> dict[str, str | int | float | bool]:

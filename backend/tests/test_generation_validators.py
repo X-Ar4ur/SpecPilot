@@ -5,6 +5,7 @@ from specpilot_backend.generation.scenarios import generate_scenario_payloads
 from specpilot_backend.generation.validators import (
     EvidenceValidationError,
     ZeroLocatorValidationError,
+    validate_feature_payload,
     validate_evidence_quotes,
     validate_zero_locator_payload,
 )
@@ -65,6 +66,38 @@ def test_feature_generation_is_evidence_grounded_and_persistable() -> None:
             "coverage_status": "uncovered",
         }
     ]
+
+
+def test_feature_validator_normalizes_llm_specific_module_labels() -> None:
+    chunk = ManualChunk(
+        content="4ga Boards features a comprehensive notifications system.",
+        metadata={
+            "source_url": "https://docs.4gaboards.com/docs/notifications",
+            "page_url": "https://docs.4gaboards.com/docs/notifications",
+            "page_title": "Notifications",
+            "heading_path": "user-manual / Notifications",
+            "manual_section": "user-manual",
+            "module": "Other",
+            "language": "en",
+            "is_ui_operational": True,
+            "content_hash": "sha256:notifications",
+        },
+    )
+    payload = {
+        "feature_id": "ft_notifications_center",
+        "module": "Notifications",
+        "title": "Notification Center",
+        "summary": "Users can inspect notifications.",
+        "source_urls": [chunk.metadata["source_url"]],
+        "evidence_quotes": ["4ga Boards features a comprehensive notifications system"],
+        "confidence": 0.81,
+        "coverage_status": "covered",
+    }
+
+    feature = validate_feature_payload(payload, [chunk])
+
+    assert feature.module == "Other"
+    assert payload["module"] == "Other"
 
 
 def test_scenario_generation_returns_valid_zero_locator_payloads() -> None:

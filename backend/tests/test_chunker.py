@@ -65,3 +65,26 @@ def test_chunk_markdown_uses_recursive_word_fallback_for_large_sections() -> Non
     assert [chunk.metadata["chunk_index_in_page"] for chunk in chunks] == list(
         range(len(chunks))
     )
+
+
+def test_chunk_markdown_keeps_docusaurus_card_heading_text_as_evidence() -> None:
+    markdown = """
+    # For Users
+    Learn how to get the most of 4ga Boards as a user!
+    ## [ 📄️Project Projects are the highest structure of 4ga boards workflow. All of the projects can be accessed from the dashboard view (3) or using the sidebar (2).](https://docs.4gaboards.com/docs/project)## [ 📄️Board: General The heart of 4ga Boards is a board.](https://docs.4gaboards.com/docs/board)
+    """
+
+    chunks = chunk_markdown(
+        markdown,
+        page_url="https://docs.4gaboards.com/docs/user-manual",
+        page_title="User Manual",
+        manual_section="user-manual",
+        module="Other",
+    )
+
+    assert len(chunks) >= 2
+    assert any(
+        "Projects are the highest structure of 4ga boards workflow" in chunk.content
+        for chunk in chunks
+    )
+    assert any("The heart of 4ga Boards is a board" in chunk.content for chunk in chunks)

@@ -12,10 +12,14 @@ def test_crawl_scope_allows_only_english_user_and_admin_manual_pages() -> None:
         "https://docs.4gaboards.com/docs/user-manual/boards/create-board",
         "https://docs.4gaboards.com/docs/admin-manual/users/permissions/",
         "https://docs.4gaboards.com/en/docs/user-manual/cards#create-card",
+        "https://docs.4gaboards.com/docs/project",
+        "https://docs.4gaboards.com/docs/project-settings",
     ]
     blocked = [
         "https://docs.4gaboards.com/pl/docs/user-manual/boards/create-board",
         "https://docs.4gaboards.com/docs/developer-manual/api",
+        "https://docs.4gaboards.com/docs/getting-started",
+        "https://docs.4gaboards.com/docs/intro",
         "https://docs.4gaboards.com/docs/user-manual/api-reference",
         "https://docs.4gaboards.com/docs/admin-manual/deployment",
         "https://docs.4gaboards.com/docs/admin-manual/database-schema",
@@ -41,6 +45,9 @@ def test_discover_manual_links_keeps_only_in_scope_links() -> None:
     html = """
     <a href="/docs/user-manual/boards/create-board">Create board</a>
     <a href="/docs/admin-manual/users/permissions">Permissions</a>
+    <a href="/docs/project">Project</a>
+    <a href="/docs/project-settings">Project Settings</a>
+    <a href="/docs/getting-started">Getting Started</a>
     <a href="/pl/docs/user-manual/boards/create-board">Polish</a>
     <a href="/docs/developer-manual/api">API</a>
     <a href="/docs/user-manual/cli-commands">CLI</a>
@@ -54,6 +61,8 @@ def test_discover_manual_links_keeps_only_in_scope_links() -> None:
     assert links == [
         "https://docs.4gaboards.com/docs/user-manual/boards/create-board",
         "https://docs.4gaboards.com/docs/admin-manual/users/permissions",
+        "https://docs.4gaboards.com/docs/project",
+        "https://docs.4gaboards.com/docs/project-settings",
     ]
 
 
@@ -66,3 +75,17 @@ def test_infer_manual_metadata_uses_url_tokens_without_technical_pages() -> None
     assert metadata.language == "en"
     assert metadata.module == "Board"
     assert metadata.module_variant == "board-view"
+
+
+def test_infer_manual_metadata_handles_flat_docusaurus_manual_pages() -> None:
+    user_metadata = infer_manual_metadata("https://docs.4gaboards.com/docs/project")
+    admin_metadata = infer_manual_metadata(
+        "https://docs.4gaboards.com/docs/project-settings"
+    )
+
+    assert user_metadata.manual_section == "user-manual"
+    assert user_metadata.module == "Project"
+    assert user_metadata.module_variant == "project"
+    assert admin_metadata.manual_section == "admin-manual"
+    assert admin_metadata.module == "Settings"
+    assert admin_metadata.module_variant == "project-settings"

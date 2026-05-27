@@ -41,7 +41,7 @@ def test_health_still_returns_ok(client: TestClient) -> None:
     assert response.json() == {"status": "ok"}
 
 
-def test_ingestion_and_generation_job_endpoints_return_stub_ids(
+def test_ingestion_and_generation_job_endpoints_return_real_job_ids(
     client: TestClient,
 ) -> None:
     crawl = client.post(
@@ -71,6 +71,7 @@ def test_ingestion_and_generation_job_endpoints_return_stub_ids(
     assert index.json()["index_id"].startswith("idx_")
     assert features.json()["job_id"].startswith("job_")
     assert scenarios.json()["job_id"].startswith("job_")
+    assert client.get(f"/api/jobs/{features.json()['job_id']}").status_code == 200
 
 
 def test_features_are_persisted_and_listed(client: TestClient) -> None:

@@ -74,6 +74,7 @@ Backend:
 Frontend:
 
 - navigation renders all required routes;
+- manual generation page renders readiness checks, crawl/index/feature/scenario phases, production job state, result statistics, and success/error actions;
 - scenario table renders steps, expectations, evidence, and JSON detail;
 - live run page handles `node_status`, `browser_step`, `browser_frame`, `verification`, and `classification` events;
 - settings form exposes one OpenAI-compatible text model configuration, supports preset field filling, and saves without exposing secret values.
@@ -81,6 +82,7 @@ Frontend:
 ## Required Integration Tests
 
 - crawl/index pipeline stores user/admin manual chunks and excludes developer manual pages;
+- manual-to-scenarios pipeline reports a background job, replaces demo data only after success, and preserves existing data on failure;
 - feature extraction returns at least 8 features when model credentials are configured;
 - scenario generation returns zero-locator scenarios with evidence;
 - creating a run creates a database record and artifact directory;
@@ -115,6 +117,17 @@ When credentials and model keys are configured, run these scenarios through brow
 - medium scenario pass rate >= 60%;
 - at least 6 failure categories represented in real or seeded failure examples;
 - all generated scenarios remain zero-locator.
+
+## Manual Generation Page Acceptance
+
+The frontend exposes a standalone `/manual-generation` route in the sidebar as `手册生成`.
+
+The page must show:
+
+- readiness checks for text model, GLM vision, browser-use, ChromaDB, SQLite, and artifact storage;
+- four production phases: `抓取手册`, `索引证据`, `提取功能点`, and `生成场景`;
+- latest job id, status, progress, result counts, zero-locator state, and error summary;
+- action links to feature tree, scenario table, and a first P0 scenario run when available.
 
 ## Milestone 9 Local Acceptance Checklist
 

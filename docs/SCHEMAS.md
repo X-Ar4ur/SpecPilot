@@ -118,6 +118,43 @@ class Run:
     report_id: str | None
 ```
 
+## Job
+
+```python
+class Job:
+    job_id: str
+    job_type: str
+    status: Literal["queued", "running", "succeeded", "failed", "cancelled"]
+    stage: str
+    progress: int
+    message: str | None
+    result: dict[str, object] | None
+    error: str | None
+    created_at: str
+    started_at: str | None
+    finished_at: str | None
+```
+
+Manual pipeline job result:
+
+```python
+class ManualPipelineResult:
+    crawl_id: str
+    index_id: str
+    pages_count: int
+    chunks_count: int
+    features_count: int
+    scenarios_count: int
+    zero_locator: bool
+    replaced_existing: bool
+```
+
+Rules:
+
+- A successful manual pipeline replaces existing non-mutation features and scenarios.
+- A failed manual pipeline must not clear or partially replace existing feature/scenario data.
+- Job errors must not contain secrets or model API keys.
+
 ## Trace Event
 
 ```python

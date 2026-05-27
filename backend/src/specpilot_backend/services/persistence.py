@@ -26,6 +26,20 @@ class ScenarioRecord(SQLModel, table=True):
     payload_json: str
 
 
+class JobRecord(SQLModel, table=True):
+    job_id: str = Field(primary_key=True)
+    job_type: str = Field(index=True)
+    status: str = Field(index=True)
+    stage: str
+    progress: int = Field(default=0, ge=0, le=100)
+    message: str | None = None
+    result_json: str | None = None
+    error: str | None = None
+    created_at: str = Field(index=True)
+    started_at: str | None = None
+    finished_at: str | None = None
+
+
 class RunRecord(SQLModel, table=True):
     run_id: str = Field(primary_key=True)
     status: str = Field(index=True)
@@ -84,6 +98,13 @@ def list_feature_payloads() -> list[dict[str, object]]:
         return [json.loads(record.payload_json) for record in records]
 
 
+def clear_feature_payloads() -> None:
+    with Session(engine) as session:
+        for record in session.exec(select(FeatureRecord)).all():
+            session.delete(record)
+        session.commit()
+
+
 def save_scenario_payload(payload: dict[str, object]) -> None:
     latest_result_value = payload.get("latest_result")
     latest_result = (
@@ -101,6 +122,15 @@ def save_scenario_payload(payload: dict[str, object]) -> None:
             payload_json=json.dumps(payload, ensure_ascii=False),
         )
         session.merge(record)
+        session.commit()
+
+
+def clear_non_mutation_scenario_payloads() -> None:
+    with Session(engine) as session:
+        records = session.exec(select(ScenarioRecord)).all()
+        for record in records:
+            if not record.is_mutation:
+                session.delete(record)
         session.commit()
 
 
@@ -136,6 +166,94 @@ def get_scenario_payload(scenario_id: str) -> dict[str, object] | None:
         if record is None:
             return None
         return json.loads(record.payload_json)
+
+
+def create_job_record(
+    *,
+    job_type: str,
+    stage: str,
+    message: str | None = None,
+    result: dict[str, object] | None = None,
+) -> JobRecord:
+    from specpilot_backend.ids import new_id
+
+    now = datetime.now(UTC).isoformat()
+    record = JobRecord(
+        job_id=new_id("job"),
+        job_type=job_type,
+        status="queued",
+        stage=stage,
+        progress=0,
+        message=message,
+        result_json=json.dumps(result, ensure_ascii=False) if result is not None else None,
+        created_at=now,
+    )
+    with Session(engine) as session:
+        session.add(record)
+        session.commit()
+        session.refresh(record)
+        return record
+
+
+def update_job_record(
+    job_id: str,
+    *,
+    status: str | None = None,
+    stage: str | None = None,
+    progress: int | None = None,
+    message: str | None = None,
+    result: dict[str, object] | None = None,
+    error: str | None = None,
+) -> JobRecord | None:
+    now = datetime.now(UTC).isoformat()
+    with Session(engine) as session:
+        record = session.get(JobRecord, job_id)
+        if record is None:
+            return None
+        if status is not None:
+            if status == "running" and record.started_at is None:
+                record.started_at = now
+            if status in {"succeeded", "failed", "cancelled"}:
+                record.finished_at = now
+            record.status = status
+        if stage is not None:
+            record.stage = stage
+        if progress is not None:
+            record.progress = max(0, min(100, progress))
+        if message is not None:
+            record.message = message
+        if result is not None:
+            record.result_json = json.dumps(result, ensure_ascii=False)
+        if error is not None:
+            record.error = error
+        session.add(record)
+        session.commit()
+        session.refresh(record)
+        return record
+
+
+def get_job_payload(job_id: str) -> dict[str, object] | None:
+    with Session(engine) as session:
+        record = session.get(JobRecord, job_id)
+        if record is None:
+            return None
+        return _job_record_to_payload(record)
+
+
+def _job_record_to_payload(record: JobRecord) -> dict[str, object]:
+    return {
+        "job_id": record.job_id,
+        "job_type": record.job_type,
+        "status": record.status,
+        "stage": record.stage,
+        "progress": record.progress,
+        "message": record.message,
+        "result": json.loads(record.result_json) if record.result_json else None,
+        "error": record.error,
+        "created_at": record.created_at,
+        "started_at": record.started_at,
+        "finished_at": record.finished_at,
+    }
 
 
 def save_run_payload(payload: dict[str, object]) -> None:

@@ -3,10 +3,28 @@ from __future__ import annotations
 from collections.abc import Awaitable, Callable, Iterable
 from dataclasses import dataclass
 from html.parser import HTMLParser
+import re
 from urllib.parse import urljoin, urlparse, urlunparse
 
 ALLOWED_HOST = "docs.4gaboards.com"
 ALLOWED_SECTIONS = frozenset({"user-manual", "admin-manual"})
+FLAT_MANUAL_PAGES: dict[str, tuple[str, str]] = {
+    "structure": ("user-manual", "Other"),
+    "project": ("user-manual", "Project"),
+    "board": ("user-manual", "Board"),
+    "board-view": ("user-manual", "Board"),
+    "list-view": ("user-manual", "Views"),
+    "list": ("user-manual", "List"),
+    "card": ("user-manual", "Card"),
+    "sidebar": ("user-manual", "Other"),
+    "notifications": ("user-manual", "Other"),
+    "settings": ("user-manual", "Settings"),
+    "view": ("user-manual", "Views"),
+    "shortcuts": ("user-manual", "Other"),
+    "admin-settings": ("admin-manual", "Admin"),
+    "instance-settings": ("admin-manual", "Settings"),
+    "project-settings": ("admin-manual", "Settings"),
+}
 BLOCKED_PATH_TERMS = (
     "developer-manual",
     "api",
@@ -85,11 +103,18 @@ def is_allowed_manual_url(url: str, scope: CrawlScope | None = None) -> bool:
         return False
 
     sections = set(scope.sections) & ALLOWED_SECTIONS
-    if len(path_parts) < 2 or path_parts[1] not in sections:
+    if len(path_parts) < 2:
         return False
 
     lowered_path = "/".join(path_parts).lower()
-    return not any(term in lowered_path for term in BLOCKED_PATH_TERMS)
+    if any(term in lowered_path for term in BLOCKED_PATH_TERMS):
+        return False
+    if path_parts[1] in sections:
+        return True
+    if len(path_parts) == 2 and path_parts[1] in FLAT_MANUAL_PAGES:
+        manual_section, _ = FLAT_MANUAL_PAGES[path_parts[1]]
+        return manual_section in sections
+    return False
 
 
 def discover_manual_links(
@@ -102,13 +127,17 @@ def discover_manual_links(
     parser.feed(html)
     seen: set[str] = set()
     links: list[str] = []
-    for href in parser.links:
+    for href in (*parser.links, *_markdown_links(html)):
         absolute = normalize_docs_url(urljoin(page_url, href))
         if absolute in seen or not is_allowed_manual_url(absolute, scope):
             continue
         seen.add(absolute)
         links.append(absolute)
     return links
+
+
+def _markdown_links(text: str) -> list[str]:
+    return re.findall(r"\[[^\]]+\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)", text)
 
 
 def infer_manual_metadata(url: str) -> ManualUrlMetadata:
@@ -120,10 +149,14 @@ def infer_manual_metadata(url: str) -> ManualUrlMetadata:
     language = "en"
     if path_parts[0] == "en":
         path_parts = path_parts[1:]
-    manual_section = path_parts[1]
-    content_parts = path_parts[2:]
-    module_variant = content_parts[-1] if content_parts else None
-    module = _module_from_parts(content_parts, manual_section)
+    if path_parts[1] in FLAT_MANUAL_PAGES:
+        manual_section, module = FLAT_MANUAL_PAGES[path_parts[1]]
+        module_variant = path_parts[1]
+    else:
+        manual_section = path_parts[1]
+        content_parts = path_parts[2:]
+        module_variant = content_parts[-1] if content_parts else None
+        module = _module_from_parts(content_parts, manual_section)
     return ManualUrlMetadata(
         manual_section=manual_section,
         module=module,

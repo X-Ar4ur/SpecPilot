@@ -1,0 +1,4 @@
+﻿Deviation log
+- Added editable content to blank body areas of duplicated content slides because the source deck provides template chrome but not empty named content placeholders.
+- Rebuilt ppt_images content as editable PowerPoint primitives where practical; complex miniature UI screenshots/charts are represented by simplified native shapes and labels rather than embedded as full-slide raster screenshots.
+- Some dense image details were reduced to presentation-readable equivalents to avoid excessive whitespace and keep text legible during oral defense.

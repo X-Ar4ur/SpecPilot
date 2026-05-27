@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   Bell,
+  BookOpenCheck,
   BookOpenText,
   ChevronLeft,
   ChevronRight,
@@ -23,6 +24,7 @@ import { SettingsDrawer } from "./settings-drawer";
 
 const navigation = [
   { label: "工作台", href: "/", icon: LayoutDashboard },
+  { label: "手册生成", href: "/manual-generation", icon: BookOpenCheck },
   { label: "功能点树", href: "/features", icon: BookOpenText },
   { label: "测试场景", href: "/scenarios", icon: ListChecks },
   { label: "执行过程", href: "/runs/live", icon: FlaskConical },

@@ -152,6 +152,69 @@ Response:
 
 Returns the full scenario schema defined in `docs/SCHEMAS.md`.
 
+## Jobs
+
+### `GET /api/jobs/{job_id}`
+
+Returns the current state of a background job created by crawl, index, feature extraction, scenario generation, or the full manual pipeline.
+
+Response:
+
+```json
+{
+  "job_id": "job_20260520_001",
+  "job_type": "manual_pipeline",
+  "status": "running",
+  "stage": "features",
+  "progress": 60,
+  "message": "正在基于手册证据提取功能点",
+  "result": {
+    "crawl_id": "crawl_20260520_001",
+    "pages_count": 24,
+    "chunks_count": 88
+  },
+  "error": null,
+  "created_at": "2026-05-20T01:00:00+00:00",
+  "started_at": "2026-05-20T01:00:01+00:00",
+  "finished_at": null
+}
+```
+
+`status` is one of `queued`, `running`, `succeeded`, `failed`, or `cancelled`.
+
+## Manual Pipeline
+
+### `POST /api/pipeline/manual-to-scenarios`
+
+Runs the production manual generation path:
+
+```text
+crawl -> chunk/index -> extract features -> generate scenarios
+```
+
+Request fields are optional and default to the approved 4ga English user/admin manual scope:
+
+```json
+{
+  "base_url": "https://docs.4gaboards.com/",
+  "sections": ["user-manual", "admin-manual"],
+  "language": "en",
+  "max_pages": 250,
+  "max_scenarios_per_feature": 3
+}
+```
+
+Response:
+
+```json
+{
+  "job_id": "job_20260520_001",
+  "status": "queued"
+}
+```
+
+On success, the job result includes `crawl_id`, `index_id`, `pages_count`, `chunks_count`, `features_count`, `scenarios_count`, `zero_locator`, and `replaced_existing`. The successful pipeline replaces existing non-mutation features and scenarios with the newly generated manual-grounded output. On failure, existing data is preserved.
+
 ## Runs
 
 ### `POST /api/runs`

@@ -153,6 +153,68 @@ export type CreateRunResponse = {
   live_url: string;
 };
 
+export type JobStatus = "queued" | "running" | "succeeded" | "failed" | "cancelled";
+
+export type ManualPipelineResult = {
+  crawl_id?: string;
+  index_id?: string;
+  pages_count?: number;
+  chunks_count?: number;
+  features_count?: number;
+  scenarios_count?: number;
+  pages?: ManualPipelinePage[];
+  features?: Feature[];
+  warnings?: ManualPipelineWarning[];
+  zero_locator?: boolean;
+  replaced_existing?: boolean;
+};
+
+export type ManualPipelineStartStage =
+  | "crawl"
+  | "index"
+  | "features"
+  | "scenarios";
+
+export type ManualPipelinePage = {
+  title: string;
+  url: string;
+  manual_section: string;
+  module: string;
+};
+
+export type ManualPipelineWarning = {
+  stage: string;
+  scope: string;
+  message: string;
+};
+
+export type ManualPipelineStartPayload = {
+  start_stage?: ManualPipelineStartStage;
+  resume_from_job_id?: string;
+  crawl_id?: string;
+  index_id?: string;
+  feature_ids?: string[];
+};
+
+export type Job = {
+  job_id: string;
+  job_type: string;
+  status: JobStatus;
+  stage: string;
+  progress: number;
+  message: string | null;
+  result: ManualPipelineResult | null;
+  error: string | null;
+  created_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+};
+
+export type PipelineStartResponse = {
+  job_id: string;
+  status: "queued";
+};
+
 export type TraceEventType =
   | "node_status"
   | "browser_step"

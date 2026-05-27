@@ -7,7 +7,9 @@ from specpilot_backend.api import (
     doctor,
     features,
     ingestion,
+    jobs,
     mutations,
+    pipeline,
     reports,
     runs,
     scenarios,
@@ -35,6 +37,8 @@ def health() -> dict[str, str]:
 
 
 app.include_router(ingestion.router)
+app.include_router(jobs.router)
+app.include_router(pipeline.router)
 app.include_router(features.router)
 app.include_router(scenarios.router)
 app.include_router(runs.router)

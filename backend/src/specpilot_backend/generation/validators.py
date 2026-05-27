@@ -46,6 +46,7 @@ def validate_feature_payload(
     payload: dict[str, Any],
     source_chunks: list[ManualChunk],
 ) -> Feature:
+    payload["module"] = _normalize_feature_module(payload.get("module"))
     feature = Feature.model_validate(payload)
     validate_evidence_quotes(feature.evidence_quotes, source_chunks)
     return feature
@@ -62,3 +63,35 @@ def validate_scenario_payload(
         raise ZeroLocatorValidationError(str(exc)) from exc
     validate_evidence_quotes(scenario.evidence_quotes, source_chunks)
     return scenario
+
+
+def _normalize_feature_module(value: object) -> str:
+    module = str(value or "Other").strip()
+    if module in {
+        "Project",
+        "Board",
+        "List",
+        "Card",
+        "Views",
+        "Settings",
+        "Admin",
+        "Other",
+    }:
+        return module
+
+    lowered = module.lower()
+    if "project" in lowered:
+        return "Project"
+    if "board" in lowered:
+        return "Board"
+    if "list" in lowered:
+        return "List"
+    if "card" in lowered:
+        return "Card"
+    if "view" in lowered:
+        return "Views"
+    if any(term in lowered for term in ("setting", "permission", "role", "user")):
+        return "Settings"
+    if "admin" in lowered:
+        return "Admin"
+    return "Other"

@@ -37,24 +37,33 @@ uv venv --python 3.12 .venv
 uv sync
 ```
 
-Run the backend from the repository root:
+## Start The App Locally
+
+Open two terminals.
+
+Terminal 1, run the backend from the repository root:
 
 ```bash
 uv run uvicorn specpilot_backend.main:app --host 127.0.0.1 --port 8000
+```
+
+Terminal 2, run the Chinese control console:
+
+```bash
+cd frontend
+pnpm dev --hostname 127.0.0.1 --port 3000
+```
+
+Then open the app at:
+
+```text
+http://127.0.0.1:3000
 ```
 
 Seed the local demo acceptance scenarios:
 
 ```bash
 uv run python -m specpilot_backend.scripts.seed_demo
-```
-
-Run the Chinese control console:
-
-```bash
-cd frontend
-pnpm install
-pnpm dev --hostname 127.0.0.1 --port 3000
 ```
 
 The frontend proxies `/api/*` to `http://127.0.0.1:8000` through `next.config.mjs` when `NEXT_PUBLIC_API_BASE_URL` is not set. Keep Browser Use hosted LLM as an explicit optional text provider or fallback only; setting `BROWSER_USE_API_KEY` must not enable Browser Use Cloud Browser.

@@ -85,6 +85,7 @@ def slugify(value: str) -> str:
 
 
 def _split_by_headings(markdown: str, *, page_title: str) -> list[_Section]:
+    markdown = re.sub(r"(?<=\))(?=#{1,3}\s)", "\n", markdown)
     lines = [line.rstrip() for line in markdown.splitlines()]
     sections: list[_Section] = []
     heading_stack: list[tuple[int, str]] = [(1, page_title)]
@@ -93,7 +94,7 @@ def _split_by_headings(markdown: str, *, page_title: str) -> list[_Section]:
     current_body: list[str] = []
 
     def flush() -> None:
-        body = "\n".join(current_body).strip()
+        body = _section_body(current_level, current_title, current_body)
         if body:
             sections.append(
                 _Section(
@@ -121,6 +122,24 @@ def _split_by_headings(markdown: str, *, page_title: str) -> list[_Section]:
 
     flush()
     return [section for section in sections if section.level > 1] or sections
+
+
+def _section_body(level: int, title: str, body_lines: list[str]) -> str:
+    body = "\n".join(body_lines).strip()
+    if level <= 1:
+        return body
+    title_text = _plain_heading_text(title)
+    if not title_text:
+        return body
+    if not body:
+        return title_text
+    return f"{title_text}\n\n{body}"
+
+
+def _plain_heading_text(title: str) -> str:
+    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", title)
+    text = text.replace("📄️", "")
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def _split_words(text: str, *, chunk_size: int, overlap: int) -> list[str]:

@@ -2,8 +2,11 @@ import type {
   ArtifactList,
   CreateRunResponse,
   DoctorResponse,
+  Job,
   Feature,
   ListResponse,
+  ManualPipelineStartPayload,
+  PipelineStartResponse,
   Run,
   RuntimeSettings,
   RuntimeSettingsPatch,
@@ -87,5 +90,14 @@ export const api = {
   },
   async getDoctor() {
     return fetchJson<DoctorResponse>("/api/doctor");
+  },
+  async startManualPipeline(payload: ManualPipelineStartPayload = {}) {
+    return fetchJson<PipelineStartResponse>("/api/pipeline/manual-to-scenarios", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+  async getJob(jobId: string) {
+    return fetchJson<Job>(`/api/jobs/${jobId}`);
   },
 };

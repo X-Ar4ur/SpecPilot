@@ -1,0 +1,275 @@
+{
+    "outputSlides":  [
+                         {
+                             "narrativeRole":  "封面",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  1,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  1
+                         },
+                         {
+                             "narrativeRole":  "目录",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  2,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  2
+                         },
+                         {
+                             "narrativeRole":  "研究背景章节页",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  3,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  3
+                         },
+                         {
+                             "narrativeRole":  "研究背景",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  4,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  4
+                         },
+                         {
+                             "narrativeRole":  "研究意义",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  5,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  4
+                         },
+                         {
+                             "narrativeRole":  "研究目标与方案章节页",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  6,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  6
+                         },
+                         {
+                             "narrativeRole":  "总体流程",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  7,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  7
+                         },
+                         {
+                             "narrativeRole":  "研究目标",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  8,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  8
+                         },
+                         {
+                             "narrativeRole":  "总体架构",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  9,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  9
+                         },
+                         {
+                             "narrativeRole":  "研究框架介绍章节页",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  10,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  10
+                         },
+                         {
+                             "narrativeRole":  "整体技术栈",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  11,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  11
+                         },
+                         {
+                             "narrativeRole":  "系统模块划分",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  12,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  11
+                         },
+                         {
+                             "narrativeRole":  "手册知识层与场景生成层",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  13,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  11
+                         },
+                         {
+                             "narrativeRole":  "后端API与数据存储",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  14,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  11
+                         },
+                         {
+                             "narrativeRole":  "前端控制台与可视化",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  15,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  11
+                         },
+                         {
+                             "narrativeRole":  "智能体层总体设计",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  16,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  11
+                         },
+                         {
+                             "narrativeRole":  "LangGraph的作用",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  17,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  11
+                         },
+                         {
+                             "narrativeRole":  "从测试场景到Agent任务",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  18,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  11
+                         },
+                         {
+                             "narrativeRole":  "为什么选择browser-use",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  19,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  11
+                         },
+                         {
+                             "narrativeRole":  "运行编排与实时事件流",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  20,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  11
+                         },
+                         {
+                             "narrativeRole":  "双通道验证与仲裁",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  21,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  11
+                         },
+                         {
+                             "narrativeRole":  "失败分类器",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  22,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  11
+                         },
+                         {
+                             "narrativeRole":  "运行报告与证据归档",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  23,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  11
+                         },
+                         {
+                             "narrativeRole":  "框架创新点总结",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  24,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  11
+                         },
+                         {
+                             "narrativeRole":  "研究进度与成果章节页",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  25,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  13
+                         },
+                         {
+                             "narrativeRole":  "当前实现成果",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  26,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  14
+                         },
+                         {
+                             "narrativeRole":  "测试与验收情况",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  27,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  11
+                         },
+                         {
+                             "narrativeRole":  "小组分工",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  28,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  11
+                         },
+                         {
+                             "narrativeRole":  "结束页",
+                             "editTargets":  [
+
+                                             ],
+                             "outputSlide":  29,
+                             "reuseMode":  "duplicate-slide",
+                             "sourceSlide":  17
+                         }
+                     ],
+    "omittedSourceSlides":  [
+                                {
+                                    "reason":  "模板同为内容页，可由第11页复用",
+                                    "sourceSlide":  12
+                                },
+                                {
+                                    "reason":  "章节页结构可由第13页复用",
+                                    "sourceSlide":  15
+                                }
+                            ]
+}
