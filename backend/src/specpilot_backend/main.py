@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from specpilot_backend.api import (
     doctor,
     features,
+    fixtures,
     ingestion,
     jobs,
     mutations,
@@ -40,6 +41,7 @@ app.include_router(ingestion.router)
 app.include_router(jobs.router)
 app.include_router(pipeline.router)
 app.include_router(features.router)
+app.include_router(fixtures.router)
 app.include_router(scenarios.router)
 app.include_router(runs.router)
 app.include_router(mutations.router)

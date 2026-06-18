@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     target_app_url: str = "https://demo.4gaboards.com/"
     fourga_username: str | None = None
     fourga_password: SecretStr | None = None
+    # 4ga REST API base used by FourgaApiClient for fixture inventory/creation.
+    # Falls back to target_app_url when unset; point it at the backend port
+    # (e.g. http://localhost:1337), not the frontend dev-server proxy.
+    fourga_api_base_url: str | None = None
 
     text_llm_provider: Literal[
         "openai_compatible", "deepseek", "browser_use"
@@ -69,6 +73,7 @@ class Settings(BaseSettings):
     @field_validator(
         "fourga_username",
         "fourga_password",
+        "fourga_api_base_url",
         "openai_compatible_api_key",
         "deepseek_api_key",
         "browser_use_api_key",
