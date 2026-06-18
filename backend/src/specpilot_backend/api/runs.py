@@ -7,6 +7,10 @@ from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from specpilot_backend.config import get_settings
+from specpilot_backend.fixtures.binding_service import (
+    FixtureNotConfiguredError,
+    collect_unready_bindings,
+)
 from specpilot_backend.ids import new_id
 from specpilot_backend.events.sse import iter_sse_events
 from specpilot_backend.services.artifacts import (
@@ -37,12 +41,21 @@ class CreateRunRequest(BaseModel):
 
 
 @router.post("")
-async def create_run(_: CreateRunRequest) -> dict[str, str]:
+async def create_run(request: CreateRunRequest) -> dict[str, str]:
+    try:
+        unready = await collect_unready_bindings(request.scenario_ids)
+    except FixtureNotConfiguredError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    if unready:
+        raise HTTPException(
+            status_code=409,
+            detail={"reason": "fixtures_unbound", "scenarios": unready},
+        )
     run_id = new_id("run")
     artifact_dir = ensure_run_artifact_dir(run_id, settings=get_settings())
     run = {
         "run_id": run_id,
-        "scenario_ids": _.scenario_ids,
+        "scenario_ids": request.scenario_ids,
         "status": "queued",
         "started_at": None,
         "finished_at": None,
@@ -54,7 +67,7 @@ async def create_run(_: CreateRunRequest) -> dict[str, str]:
         "report_id": None,
     }
     save_run_payload(run)
-    if run_can_start(_.scenario_ids):
+    if run_can_start(request.scenario_ids):
         asyncio.create_task(execute_run(run_id))
     return {"run_id": run_id, "status": "queued", "live_url": f"/runs/live/{run_id}"}
 

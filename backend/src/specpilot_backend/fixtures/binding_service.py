@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from typing import cast
 
@@ -15,10 +16,15 @@ from specpilot_backend.fixtures.models import (
     ScenarioBindingStatus,
     ScenarioFixtureBinding,
 )
+from specpilot_backend.fixtures.tokens import (
+    resolve_fixture_tokens,
+    unresolved_fixture_tokens,
+)
 from specpilot_backend.models.scenarios import DataDependency, FixtureSlot
 from specpilot_backend.services.persistence import (
     get_fixture_binding,
     get_scenario_payload,
+    list_fixture_bindings,
     save_fixture_binding,
 )
 
@@ -33,6 +39,14 @@ class FixtureBindError(ValueError):
 
 class ScenarioNotFoundError(Exception):
     """No scenario exists with the requested id."""
+
+
+class FixturePreconditionError(Exception):
+    """A data-dependent scenario could not be resolved before execution."""
+
+    def __init__(self, message: str, unresolved_refs: list[str]) -> None:
+        super().__init__(message)
+        self.unresolved_refs = unresolved_refs
 
 
 async def bind_slot(
@@ -109,15 +123,20 @@ async def get_binding_status(
             slots=[],
         )
 
-    existing_ids = await _existing_entity_ids(resolved_settings)
-    slot_states: list[FixtureSlotBindingState] = []
+    bindings_by_ref: dict[str, ScenarioFixtureBinding] = {}
     for slot in slots:
         binding_payload = get_fixture_binding(scenario_id, target, slot.ref)
-        binding = (
-            ScenarioFixtureBinding.model_validate(binding_payload)
-            if binding_payload is not None
-            else None
-        )
+        if binding_payload is not None:
+            bindings_by_ref[slot.ref] = ScenarioFixtureBinding.model_validate(
+                binding_payload
+            )
+
+    existing_ids = (
+        await _existing_entity_ids(resolved_settings) if bindings_by_ref else set()
+    )
+    slot_states: list[FixtureSlotBindingState] = []
+    for slot in slots:
+        binding = bindings_by_ref.get(slot.ref)
         exists = binding is not None and binding.entity_id in existing_ids
         slot_states.append(
             FixtureSlotBindingState(
@@ -156,3 +175,71 @@ def _flatten_entity_ids(inventory: FixtureInventory) -> set[str]:
                 for card in fixture_list.cards:
                     ids.add(card.id)
     return ids
+
+
+async def collect_unready_bindings(
+    scenario_ids: list[str], *, settings: Settings | None = None
+) -> list[dict[str, object]]:
+    """Return one entry per scenario whose interactive fixtures are not ready."""
+    resolved_settings = settings or get_settings()
+    unready: list[dict[str, object]] = []
+    for scenario_id in scenario_ids:
+        try:
+            status = await get_binding_status(
+                scenario_id, settings=resolved_settings
+            )
+        except ScenarioNotFoundError:
+            continue
+        if not status.ready:
+            unready.append(
+                {
+                    "scenario_id": scenario_id,
+                    "data_dependency": status.data_dependency,
+                    "slots": [
+                        state.model_dump()
+                        for state in status.slots
+                        if not state.exists
+                    ],
+                }
+            )
+    return unready
+
+
+def resolve_scenario_fixtures(
+    scenario_payload: dict[str, object], *, settings: Settings | None = None
+) -> dict[str, object]:
+    """Replace fixture tokens with bound values for interactive scenarios.
+
+    Raises :class:`FixturePreconditionError` when a required slot has no binding
+    or a token cannot be resolved.
+    """
+    data_dependency = scenario_payload.get("data_dependency", "none")
+    raw_fixtures = scenario_payload.get("fixtures", [])
+    fixtures = raw_fixtures if isinstance(raw_fixtures, list) else []
+    if data_dependency != "interactive" or not fixtures:
+        return scenario_payload
+
+    resolved_settings = settings or get_settings()
+    target = resolve_target_base_url(resolved_settings)
+    scenario_id = str(scenario_payload.get("scenario_id", ""))
+    resolved: dict[str, Mapping[str, object]] = {
+        str(binding["ref"]): _as_mapping(binding.get("resolved_values"))
+        for binding in list_fixture_bindings(scenario_id, target)
+    }
+    slot_refs = {
+        str(slot["ref"])
+        for slot in fixtures
+        if isinstance(slot, dict) and "ref" in slot
+    }
+    resolved_payload = resolve_fixture_tokens(scenario_payload, resolved)
+    leftover = {ref for ref, _ in unresolved_fixture_tokens(resolved_payload, resolved)}
+    missing = sorted((slot_refs - set(resolved)) | leftover)
+    if missing:
+        raise FixturePreconditionError(
+            f"unresolved fixture slots: {', '.join(missing)}", missing
+        )
+    return cast("dict[str, object]", resolved_payload)
+
+
+def _as_mapping(value: object) -> Mapping[str, object]:
+    return value if isinstance(value, dict) else {}

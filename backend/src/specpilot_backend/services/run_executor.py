@@ -15,6 +15,10 @@ from specpilot_backend.agent.browser_use_runner import (
 )
 from specpilot_backend.config import Settings, get_settings
 from specpilot_backend.events.bus import get_event_bus
+from specpilot_backend.fixtures.binding_service import (
+    FixturePreconditionError,
+    resolve_scenario_fixtures,
+)
 from specpilot_backend.ids import new_event_id
 from specpilot_backend.models.events import TraceEvent, TraceEventType
 from specpilot_backend.models.scenarios import TestScenario
@@ -65,9 +69,26 @@ async def execute_run(
             trace_events,
         )
         scenario_payload = _first_scenario_payload(run)
-        scenario = TestScenario.model_validate(scenario_payload)
         await _publish(
             _event(run_id, "node_status", "ScenarioLoader", "success", "测试场景已加载"),
+            writer,
+            trace_events,
+        )
+        await _publish(
+            _event(
+                run_id, "node_status", "FixtureResolver", "running", "解析前置数据绑定"
+            ),
+            writer,
+            trace_events,
+        )
+        scenario_payload = resolve_scenario_fixtures(
+            scenario_payload, settings=resolved_settings
+        )
+        scenario = TestScenario.model_validate(scenario_payload)
+        await _publish(
+            _event(
+                run_id, "node_status", "FixtureResolver", "success", "前置数据已就绪"
+            ),
             writer,
             trace_events,
         )
@@ -175,6 +196,36 @@ async def execute_run(
                 "BrowserUseRun",
                 "cancelled",
                 "执行已取消",
+            ),
+            writer,
+            trace_events,
+        )
+        generate_report(
+            run_summary=run,
+            verification_results=[],
+            trace_events=trace_events,
+            failure_classification=None,
+            output_dir=run_dir,
+        )
+        save_run_payload(run)
+    except FixturePreconditionError as exc:
+        finished_at = _utc_now()
+        run = _update_run(
+            run,
+            status="error",
+            finished_at=finished_at,
+            duration_ms=_duration_ms(started_at, finished_at),
+            verdict=None,
+            failure_primary="precondition_setup_failure",
+            report_id=run_id,
+        )
+        await _publish(
+            _event(
+                run_id,
+                "error",
+                "FixtureResolver",
+                "failed",
+                f"前置条件未满足: {exc}",
             ),
             writer,
             trace_events,
