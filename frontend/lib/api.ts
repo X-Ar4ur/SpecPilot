@@ -2,6 +2,8 @@ import type {
   ArtifactList,
   CreateRunResponse,
   DoctorResponse,
+  FixtureBindRequest,
+  FixtureInventory,
   Job,
   Feature,
   ListResponse,
@@ -10,6 +12,8 @@ import type {
   Run,
   RuntimeSettings,
   RuntimeSettingsPatch,
+  ScenarioBindingStatus,
+  ScenarioFixtureBinding,
   ScenarioSummary,
   TestScenario,
   TraceList,
@@ -17,6 +21,18 @@ import type {
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+
+export class ApiError extends Error {
+  readonly status: number;
+  readonly body: unknown;
+
+  constructor(status: number, statusText: string, body: unknown) {
+    super(`${status} ${statusText}`);
+    this.name = "ApiError";
+    this.status = status;
+    this.body = body;
+  }
+}
 
 async function fetchJson<T>(
   path: string,
@@ -30,7 +46,13 @@ async function fetchJson<T>(
     },
   });
   if (!response.ok) {
-    throw new Error(`${response.status} ${response.statusText}`);
+    let body: unknown = null;
+    try {
+      body = await response.json();
+    } catch {
+      body = null;
+    }
+    throw new ApiError(response.status, response.statusText, body);
   }
   return response.json() as Promise<T>;
 }
@@ -53,6 +75,20 @@ export const api = {
   },
   async getScenario(scenarioId: string) {
     return fetchJson<TestScenario>(`/api/scenarios/${scenarioId}`);
+  },
+  async getScenarioBinding(scenarioId: string) {
+    return fetchJson<ScenarioBindingStatus>(
+      `/api/scenarios/${scenarioId}/binding`,
+    );
+  },
+  async getFixtureInventory() {
+    return fetchJson<FixtureInventory>("/api/fixtures/inventory");
+  },
+  async bindFixture(request: FixtureBindRequest) {
+    return fetchJson<ScenarioFixtureBinding>("/api/fixtures/bind", {
+      method: "POST",
+      body: JSON.stringify(request),
+    });
   },
   async createRun(scenarioIds: string[]) {
     return fetchJson<CreateRunResponse>("/api/runs", {

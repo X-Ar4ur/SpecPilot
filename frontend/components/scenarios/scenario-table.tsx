@@ -13,8 +13,9 @@ import {
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 
-import { api } from "../../lib/api";
+import { api, ApiError } from "../../lib/api";
 import type { ScenarioSummary, TestScenario } from "../../lib/types";
+import { FixtureBindingDialog } from "./fixture-binding-dialog";
 
 const priorityLabels = { P0: "P0", P1: "P1", P2: "P2" };
 const difficultyLabels = {
@@ -34,6 +35,7 @@ export function ScenarioTable() {
   const [difficulty, setDifficulty] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [bindingScenarioId, setBindingScenarioId] = useState<string | null>(null);
   const scenariosQuery = useQuery({
     queryKey: ["scenarios", priority, difficulty],
     queryFn: () =>
@@ -63,6 +65,11 @@ export function ScenarioTable() {
   const runMutation = useMutation({
     mutationFn: (scenarioId: string) => api.createRun([scenarioId]),
     onSuccess: (result) => window.location.assign(result.live_url),
+    onError: (error, scenarioId) => {
+      if (error instanceof ApiError && error.status === 409) {
+        setBindingScenarioId(scenarioId);
+      }
+    },
   });
 
   function openDetail(scenarioId: string) {
@@ -155,6 +162,18 @@ export function ScenarioTable() {
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
+
+      <FixtureBindingDialog
+        scenarioId={bindingScenarioId}
+        open={Boolean(bindingScenarioId)}
+        onOpenChange={(open) => {
+          if (!open) setBindingScenarioId(null);
+        }}
+        onReady={(scenarioId) => {
+          setBindingScenarioId(null);
+          runMutation.mutate(scenarioId);
+        }}
+      />
     </div>
   );
 }

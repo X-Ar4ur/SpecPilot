@@ -245,6 +245,59 @@ export type ArtifactList = {
   files: string[];
 };
 
+export type FixtureKind = "project" | "board" | "list" | "card";
+export type DataDependency = "none" | "self_seeding" | "interactive";
+
+export type InventoryCard = { id: string; name: string };
+export type InventoryList = { id: string; name: string; cards: InventoryCard[] };
+export type InventoryBoard = { id: string; name: string; lists: InventoryList[] };
+export type InventoryProject = {
+  id: string;
+  name: string;
+  boards: InventoryBoard[];
+};
+export type FixtureInventory = {
+  target_app_url: string;
+  projects: InventoryProject[];
+};
+
+export type ScenarioFixtureBinding = {
+  scenario_id: string;
+  target_app_url: string;
+  ref: string;
+  entity_kind: FixtureKind;
+  entity_id: string;
+  resolved_values: Record<string, unknown>;
+  created_by_specpilot: boolean;
+  bound_at: string;
+};
+
+export type FixtureSlotBindingState = {
+  ref: string;
+  kind: FixtureKind;
+  bound: boolean;
+  exists: boolean;
+  binding: ScenarioFixtureBinding | null;
+};
+
+export type ScenarioBindingStatus = {
+  scenario_id: string;
+  target_app_url: string;
+  data_dependency: DataDependency;
+  ready: boolean;
+  slots: FixtureSlotBindingState[];
+};
+
+export type FixtureBindRequest = {
+  scenario_id: string;
+  ref: string;
+  mode: "existing" | "create";
+  kind: FixtureKind;
+  entity_id?: string;
+  parent_id?: string;
+  attributes?: Record<string, unknown>;
+};
+
 export type BoundingBox = {
   x: number;
   y: number;
