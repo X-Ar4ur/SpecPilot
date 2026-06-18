@@ -94,7 +94,9 @@ Required output:
       ],
       "max_steps": 10,
       "requires_visual_check": false,
-      "review_status": "auto_validated"
+      "review_status": "auto_validated",
+      "data_dependency": "self_seeding",
+      "fixtures": []
     }
   ]
 }
@@ -107,6 +109,8 @@ Rules:
 - Prefer 2-6 user action steps.
 - Use `semantic` expectation only when DOM/text/URL checks are insufficient.
 - Mark unsupported or weak-evidence scenarios as `rejected`.
+- Classify each scenario's `data_dependency`: `self_seeding` when it creates the data it then checks (create/edit flows); `interactive` when it depends on pre-existing data (open/view/search/filter/move/delete an existing element); `none` when no specific element is required.
+- For `interactive` scenarios, emit a `fixtures` block (domain attributes only, no locators) and reference each slot via `{{fixture.<ref>.<attr>}}` template tokens in `test_data`, `steps[].action`, and `expectations[].params`. Do not hardcode a concrete element value that may be absent from the target instance.
 
 ## Browser Task Construction
 
@@ -140,6 +144,7 @@ Rules:
 
 - Do not include `expectations` in the browser-use task string. Expectations are consumed only by DeterministicVerifier and VisionVerifier after execution.
 - Non-sensitive `test_data` may be rendered as literal values in steps. Credentials and API keys must use browser-use `sensitive_data` placeholders instead.
+- For `interactive` scenarios, FixtureResolver has already replaced every `{{fixture.<ref>.<attr>}}` template token with the bound literal value before this task string is built; the task must never contain unresolved tokens.
 
 ## Vision Verification
 

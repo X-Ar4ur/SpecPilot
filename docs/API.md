@@ -152,6 +152,66 @@ Response:
 
 Returns the full scenario schema defined in `docs/SCHEMAS.md`.
 
+## Fixtures
+
+These endpoints back the interactive fixture-binding modal for data-dependent scenarios. The backend reaches the target 4ga Boards instance through `FourgaApiClient`, reusing the configured `fourga_username` / `fourga_password`. The 4ga login token is never returned to the frontend, logs, traces, or reports.
+
+### `GET /api/fixtures/inventory`
+
+Lists the existing elements of the target instance as a Project → Board → List → Card tree for the binding modal. Optional `kind` query filters to one entity type.
+
+Response:
+
+```json
+{
+  "target_app_url": "http://localhost:1337/",
+  "projects": [
+    {
+      "id": "1799990033768252426",
+      "name": "Getting started",
+      "boards": [
+        {
+          "id": "1799990034514838542",
+          "name": "Learn 4ga Boards",
+          "lists": [
+            {
+              "id": "1799990037459239957",
+              "name": "Getting Started",
+              "cards": [
+                { "id": "1799990037618623521", "name": "Getting Started" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+### `POST /api/fixtures/bind`
+
+Binds a scenario fixture slot to an element. `mode = "existing"` binds to an element the user picked; `mode = "create"` creates a new element through the 4ga REST API and binds to it.
+
+Request:
+
+```json
+{
+  "scenario_id": "sc_list_view_card_open_001",
+  "ref": "target_card",
+  "mode": "create",
+  "kind": "card",
+  "parent_id": "1799990037459239957",
+  "attributes": { "title": "完成季度报告" }
+}
+```
+
+Response returns the persisted `ScenarioFixtureBinding` from `docs/SCHEMAS.md` (no secret values).
+
+### `GET /api/scenarios/{scenario_id}/binding`
+
+Returns the current bindings for a scenario against the active `target_app_url`, including a per-slot `exists` flag from a live 4ga existence check. Slots without a valid binding signal that the modal must be shown.
+
 ## Jobs
 
 ### `GET /api/jobs/{job_id}`
@@ -243,6 +303,8 @@ Response:
   "live_url": "/runs/live/run_20260506_001"
 }
 ```
+
+For a scenario with `data_dependency = "interactive"`, every fixture slot must have a valid binding before the run starts; otherwise the backend rejects the request and returns the unbound slots so the frontend can open the binding modal. A run whose preconditions cannot be established finishes with `status = error` and `failure_primary = precondition_setup_failure` (see `docs/SCHEMAS.md`).
 
 ### `GET /api/runs`
 

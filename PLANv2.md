@@ -47,6 +47,12 @@ DOM / 语义校验 + GLM-4.6V 视觉验证
 
 依据：在初版设计中，LangGraph 包含独立的 `PlannerNode` 与 `ExecutorNode`，与 `browser-use` 内部 loop 职责重叠，会导致"LangGraph 在此架构中具体做了什么"难以解释。本设计将 Plan/Execute 合并为单一 `BrowserUseRunNode`，使 LangGraph 的编排价值集中在执行**之后**的处理环节，分工清晰。
 
+**决策四：依赖型场景的交互式前置数据绑定**
+
+部分场景依赖既有数据（如"从 List View 打开标题为 X 的 Card"）。若目标实例无此数据，测试会假性失败——这是测试数据问题，非功能缺陷。解决方案：场景不再硬编码具体值，而在 `fixtures` 中声明所需数据槽（仍零 locator，仅领域属性）。运行依赖型场景时前端弹出绑定窗口，列出目标实例当前各类型元素（Project/Board/List/Card），由用户**选择既有元素或手动填写新建**；绑定时把操作目标与 `expectation` 断言值**一并重绑**为用户选定的已知值，从而保留确定性校验。绑定按 `target_app_url` 持久化，重跑/批量时元素仍在则跳过弹窗，实现无人值守。
+
+数据来源：4ga Boards 为 Sails.js + React/Redux SPA，自带 JSON REST API（已实测：`POST /api/access-tokens` 登录、`GET /api/projects`、`GET /api/boards/:id`、`POST /api/lists/:listId/cards` 等）。后端 `FourgaApiClient` 复用既有 `fourga_username/password` 登录，**仅用于 Arrange 阶段**列举/创建数据；执行与判定仍全程走 browser-use 真实 UI + 双通道校验。该客户端是后端 infra、非 browser-use action，不违反决策一；零 locator（决策二）继续覆盖 `fixtures` 内部。前置数据无法建立时 run 判为 `error`(`precondition_setup_failure`)，排除在功能 pass/fail 指标外。完整设计见 `docs/FIXTURE_PROVISIONING.md`。
+
 ## Frontend Plan
 
 前端采用 App Shell：
@@ -1439,7 +1445,7 @@ class FailureClassification:
    离线访问 demo，提取页面级别的语义信息（"该页面有 Add Card 文字入口""卡片支持拖拽到其他 List"），作为场景生成时的软提示提供给 LLM，帮助其确认手册描述的功能在实现中存在。**该信息只用于场景生成阶段，不进入运行时执行路径，不作为定位信息**。如实验显示无明显增益，可不实施。
 
 4. 场景执行
-   前端点击运行后创建 run,跳转执行过程页。LangGraph 加载场景,`BrowserUseRunNode` 将场景 `steps` + `test_data` + `preconditions` 拼成自然语言任务字符串交给 browser-use Agent,由 LLM 自主选择 DOM 元素与 action 完成整段交互。执行期间通过 hook 向 SSE 事件总线推送 action、截图、DOM、URL 变迁,前端实时显示。`max_steps` 由场景的 difficulty 推断(simple=10、medium=20、hard=35,详见 "Feature & Scenario Generation" 章节),可在系统设置中覆盖。
+   前端点击运行后创建 run,跳转执行过程页。LangGraph 加载场景。对依赖型场景(`fixtures` 非空),`FixtureResolverNode` 先解析绑定与占位符:有有效绑定且元素仍在则直接复用,否则前端弹窗由用户选择既有元素或新建(经 `FourgaApiClient` 调 4ga REST API),并把绑定值注入 `steps`/`test_data`/`expectations`;前置数据无法建立时 run 以 `error`(`precondition_setup_failure`) 结束、不进入 browser-use(详见 "Key Design Decisions" 决策四与 `docs/FIXTURE_PROVISIONING.md`)。随后 `BrowserUseRunNode` 将场景 `steps` + `test_data` + `preconditions` 拼成自然语言任务字符串交给 browser-use Agent,由 LLM 自主选择 DOM 元素与 action 完成整段交互。执行期间通过 hook 向 SSE 事件总线推送 action、截图、DOM、URL 变迁,前端实时显示。`max_steps` 由场景的 difficulty 推断(simple=10、medium=20、hard=35,详见 "Feature & Scenario Generation" 章节),可在系统设置中覆盖。
 
 5. 结果验证
    BrowserUseRunNode 完成后等待 500ms + `networkidle` 后采集 `VerificationSnapshot`(DOM/纯文本/URL/起终态截图)。DeterministicVerifier 按 expectation.type 分发结构化检查;`semantic` 类与 `requires_visual_check=true` 触发 VisionVerifier 调 GLM-4.6V(双帧对比 + thinking 模式)。两条通道结果经仲裁矩阵综合,低置信度进 `needs_review`,DOM/视觉冲突进 `dom_mismatch_visually_correct`。详见 "Verification Pipeline" 章节。

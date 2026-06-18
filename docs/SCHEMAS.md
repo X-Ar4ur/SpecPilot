@@ -40,6 +40,13 @@ class Expectation:
     description: str
     params: dict[str, object]
 
+class FixtureSlot:
+    ref: str                                  # Slot handle, e.g. "target_card"; referenced by test_data/steps/expectations
+    kind: Literal["project", "board", "list", "card"]
+    parent_ref: str | None = None             # Parent slot, e.g. a card's list
+    required_attrs: list[str] = ["title"]     # Attributes that must be resolved at binding time
+    allow_create: bool = True                 # Whether the user may type-and-create a new element
+
 class TestScenario:
     scenario_id: str
     feature_id: str
@@ -56,6 +63,8 @@ class TestScenario:
     requires_visual_check: bool
     review_status: Literal["auto_validated", "needs_review", "rejected"]
     is_mutation: bool = False
+    data_dependency: Literal["none", "self_seeding", "interactive"] = "none"
+    fixtures: list[FixtureSlot] = []
 ```
 
 Zero-locator rule:
@@ -63,6 +72,31 @@ Zero-locator rule:
 - These field names are forbidden anywhere inside a scenario object: `locator`, `selector`, `xpath`, `element_id`, `element_index`, `css`, `css_selector`.
 - Step actions must be natural language intentions.
 - Runtime browser-use element indices may appear in traces, not in scenarios.
+- `fixtures` declare domain data only (entity `kind` plus attributes such as `title` and parent reference); the forbidden field names above apply inside `fixtures` too.
+- Data-dependent scenarios (`data_dependency = "interactive"`) use `{{fixture.<ref>.<attr>}}` template tokens in `test_data`, `steps[].action`, and `expectations[].params`; FixtureResolver replaces them with bound literal values before task construction and verification.
+
+## Fixture Binding
+
+A `FixtureSlot` is resolved into a concrete `ScenarioFixtureBinding` at run launch — by reusing a remembered binding, by the user selecting an existing element, or by the user creating a new element through the 4ga REST API. Bindings are persisted and isolated per `target_app_url`.
+
+```python
+class ScenarioFixtureBinding:
+    scenario_id: str
+    target_app_url: str                       # Binding belongs to one instance
+    ref: str                                  # Matches FixtureSlot.ref
+    entity_kind: Literal["project", "board", "list", "card"]
+    entity_id: str                            # 4ga entity id, used for pre-run existence check
+    resolved_values: dict[str, object]        # e.g. {"title": "买菜清单"}
+    created_by_specpilot: bool                # True if SpecPilot created the element (eligible for cleanup)
+    bound_at: str
+```
+
+Rules:
+
+- Before each run, every `FixtureSlot` must have a binding whose `entity_id` still exists in the target instance; a stale binding re-opens the modal.
+- Binding rebinds both the action target and the matching `expectations[].params`, so the deterministic oracle checks a known value the user selected.
+- Switching `target_app_url` invalidates bindings and re-prompts.
+- The 4ga login token used to list/create elements is never written to scenarios, bindings, prompts, logs, traces, or reports.
 
 ## Mutated Scenario
 
@@ -117,6 +151,10 @@ class Run:
     artifact_dir: str
     report_id: str | None
 ```
+
+Rules:
+
+- When fixture preconditions cannot be established, the run ends with `status = "error"` and `failure_primary = "precondition_setup_failure"`. This is an environment-blocked outcome, not a functional `fail`, and is excluded from the functional pass/fail and failure-category metrics.
 
 ## Job
 

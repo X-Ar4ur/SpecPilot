@@ -44,6 +44,7 @@ Layout:
 - collapsible left navigation: workbench, features, scenarios, live runs, run history;
 - main content area: current route.
 - settings drawer: one OpenAI-compatible provider form with provider name, note, home URL, write-only API key, API request base URL, and model name; presets may fill Codex API / gateway, OpenAI, or DeepSeek defaults without adding provider tabs. Existing secrets must be shown only as configured/empty states.
+- fixture-binding modal: shown when launching a data-dependent scenario (non-empty `fixtures`); lists the target instance's existing Project/Board/List/Card elements and lets the user pick an existing element or create a new one. Bindings are remembered per `target_app_url`; re-runs skip the modal when the bound element still exists.
 
 Visual direction:
 
@@ -87,6 +88,7 @@ LangGraph nodes:
 
 ```text
 ScenarioLoader
+FixtureResolver
 BrowserUseRun
 TraceCollector
 DeterministicVerifier
@@ -100,6 +102,7 @@ Responsibility split:
 
 - browser-use performs the per-scenario browser planning and execution loop;
 - LangGraph orchestrates loading, execution handoff, trace collection, verification, classification, repair decision, and reporting.
+- FixtureResolver establishes data preconditions for data-dependent scenarios before execution: it resolves remembered bindings or opens the frontend binding modal, lists/creates target elements through the 4ga REST API, and injects resolved values into steps/test_data/expectations. See `docs/FIXTURE_PROVISIONING.md`.
 
 The implementation must not build a separate LLM planner that duplicates browser-use internal planning.
 
@@ -171,6 +174,8 @@ Verdicts:
 - `pass`;
 - `fail`;
 - `needs_review`.
+
+A run whose fixture preconditions cannot be established (4ga API unreachable, login failure, or binding cancelled with no usable element) ends with `status = error` and `failure_primary = precondition_setup_failure`. This environment-blocked outcome is excluded from the functional pass/fail and failure-category metrics.
 
 Confidence thresholds:
 

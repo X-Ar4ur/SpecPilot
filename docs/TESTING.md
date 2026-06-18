@@ -70,6 +70,11 @@ Backend:
 - GLM confidence thresholds produce pass/fail/needs_review correctly;
 - mutation endpoint returns a valid stub schema.
 - settings endpoint writes model settings to `.env`, never returns secret values, preserves existing API keys when submitted empty, and rejects `browser_use_cloud_browser_enabled=true` in the MVP.
+- fixture schema rejects forbidden locator fields inside `fixtures`, and `data_dependency` defaults to `none`;
+- template-token resolution replaces `{{fixture.<ref>.<attr>}}` in steps, test_data, and expectations with bound values, leaving no unresolved token;
+- ScenarioFixtureBinding persists and is isolated per `target_app_url`;
+- FourgaApiClient logs in, lists the Project/Board/List/Card inventory, and creates a card against a mocked 4ga REST API, and never leaks the token;
+- a run with unestablished preconditions reports `status=error` and `failure_primary=precondition_setup_failure`, excluded from functional metrics.
 
 Frontend:
 
@@ -78,6 +83,7 @@ Frontend:
 - scenario table renders steps, expectations, evidence, and JSON detail;
 - live run page handles `node_status`, `browser_step`, `browser_frame`, `verification`, and `classification` events;
 - settings form exposes one OpenAI-compatible text model configuration, supports preset field filling, and saves without exposing secret values.
+- fixture-binding modal renders the inventory tree, supports selecting an existing element and creating a new one, shows remembered bindings, and re-prompts when a bound element is missing.
 
 ## Required Integration Tests
 
@@ -88,6 +94,9 @@ Frontend:
 - creating a run creates a database record and artifact directory;
 - SSE stream emits trace-compatible events;
 - report generation writes `report.json` and `report.html`.
+- `GET /api/fixtures/inventory` returns a Project→Board→List→Card tree for the configured instance;
+- `POST /api/fixtures/bind` persists a binding (existing and create modes) and rebinds the scenario's action target and expectation params;
+- launching an `interactive` scenario without a valid binding is rejected with its unbound slots.
 
 ## Required Configuration Tests
 
@@ -160,6 +169,6 @@ rg -n "selector|locator|xpath|element_index|element_id|css_selector" docs AGENTS
 
 Allowed matches:
 
-- `AGENTS.md`, `PLANv2.md`, `README.md`, `docs/REQUIREMENTS.md`, `docs/SCHEMAS.md`, `docs/PROMPTS.md`, `docs/API.md`, `docs/TESTING.md`, and tests may mention forbidden locator terms only as prohibitions or validation checks.
+- `AGENTS.md`, `PLANv2.md`, `README.md`, `docs/REQUIREMENTS.md`, `docs/SCHEMAS.md`, `docs/PROMPTS.md`, `docs/API.md`, `docs/TESTING.md`, `docs/FIXTURE_PROVISIONING.md`, and tests may mention forbidden locator terms only as prohibitions or validation checks.
 - `docs/SPEC.md` and `PLANv2.md` may mention deferred P2 features only as explicit non-MVP scope.
 - `docs/browser-use.md` may contain upstream browser-use examples that mention ChatBrowserUse, Browser Use Cloud, Playwright integration, or selectors, but its SpecPilot Project Override at the top controls project behavior.
