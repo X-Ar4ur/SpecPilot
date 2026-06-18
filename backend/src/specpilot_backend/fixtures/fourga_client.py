@@ -111,14 +111,20 @@ class FourgaApiClient:
         return payload
 
 
+def resolve_target_base_url(settings: Settings | None = None) -> str:
+    """Resolve the 4ga API base URL: FOURGA_API_BASE_URL or target_app_url."""
+    resolved = settings or get_settings()
+    base = resolved.fourga_api_base_url or resolved.target_app_url
+    return base.rstrip("/")
+
+
 def build_fourga_client(settings: Settings | None = None) -> FourgaApiClient | None:
     """Build a client from settings, or None when credentials are missing."""
     resolved = settings or get_settings()
     if resolved.fourga_username is None or resolved.fourga_password is None:
         return None
-    base_url = resolved.fourga_api_base_url or resolved.target_app_url
     return FourgaApiClient(
-        base_url=base_url,
+        base_url=resolve_target_base_url(resolved),
         username=resolved.fourga_username,
         password=resolved.fourga_password.get_secret_value(),
     )

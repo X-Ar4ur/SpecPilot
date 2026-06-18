@@ -13,6 +13,8 @@ ExpectationType = Literal[
     "semantic",
 ]
 ReviewStatus = Literal["auto_validated", "needs_review", "rejected"]
+DataDependency = Literal["none", "self_seeding", "interactive"]
+FixtureKind = Literal["project", "board", "list", "card"]
 
 FORBIDDEN_SCENARIO_FIELDS = {
     "locator",
@@ -56,6 +58,16 @@ class Expectation(BaseModel):
     params: dict[str, object]
 
 
+class FixtureSlot(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    ref: str = Field(min_length=1)
+    kind: FixtureKind
+    parent_ref: str | None = None
+    required_attrs: list[str] = Field(default_factory=lambda: ["title"])
+    allow_create: bool = True
+
+
 class TestScenario(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -74,6 +86,8 @@ class TestScenario(BaseModel):
     requires_visual_check: bool
     review_status: ReviewStatus
     is_mutation: bool = False
+    data_dependency: DataDependency = "none"
+    fixtures: list[FixtureSlot] = Field(default_factory=list)
 
     @model_validator(mode="before")
     @classmethod

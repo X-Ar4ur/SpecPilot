@@ -48,6 +48,17 @@ class RunRecord(SQLModel, table=True):
     created_at: str = Field(index=True)
 
 
+class FixtureBindingRecord(SQLModel, table=True):
+    scenario_id: str = Field(primary_key=True)
+    target_app_url: str = Field(primary_key=True)
+    ref: str = Field(primary_key=True)
+    entity_kind: str
+    entity_id: str
+    resolved_values_json: str
+    created_by_specpilot: bool = Field(default=False)
+    bound_at: str
+
+
 def _database_url() -> str:
     return get_settings().database_url
 
@@ -317,3 +328,62 @@ def artifact_path_for_run(run_id: str) -> Path:
     if run is None:
         return get_settings().artifact_root / run_id
     return Path(str(run["artifact_dir"]))
+
+
+def save_fixture_binding(payload: dict[str, object]) -> None:
+    with Session(engine) as session:
+        record = FixtureBindingRecord(
+            scenario_id=str(payload["scenario_id"]),
+            target_app_url=str(payload["target_app_url"]),
+            ref=str(payload["ref"]),
+            entity_kind=str(payload["entity_kind"]),
+            entity_id=str(payload["entity_id"]),
+            resolved_values_json=json.dumps(
+                payload.get("resolved_values", {}), ensure_ascii=False
+            ),
+            created_by_specpilot=bool(payload.get("created_by_specpilot", False)),
+            bound_at=str(payload["bound_at"]),
+        )
+        session.merge(record)
+        session.commit()
+
+
+def list_fixture_bindings(
+    scenario_id: str, target_app_url: str
+) -> list[dict[str, object]]:
+    statement = select(FixtureBindingRecord).where(
+        FixtureBindingRecord.scenario_id == scenario_id,
+        FixtureBindingRecord.target_app_url == target_app_url,
+    )
+    with Session(engine) as session:
+        return [
+            _fixture_binding_to_payload(record)
+            for record in session.exec(statement).all()
+        ]
+
+
+def get_fixture_binding(
+    scenario_id: str, target_app_url: str, ref: str
+) -> dict[str, object] | None:
+    with Session(engine) as session:
+        record = session.get(
+            FixtureBindingRecord, (scenario_id, target_app_url, ref)
+        )
+        if record is None:
+            return None
+        return _fixture_binding_to_payload(record)
+
+
+def _fixture_binding_to_payload(
+    record: FixtureBindingRecord,
+) -> dict[str, object]:
+    return {
+        "scenario_id": record.scenario_id,
+        "target_app_url": record.target_app_url,
+        "ref": record.ref,
+        "entity_kind": record.entity_kind,
+        "entity_id": record.entity_id,
+        "resolved_values": json.loads(record.resolved_values_json),
+        "created_by_specpilot": record.created_by_specpilot,
+        "bound_at": record.bound_at,
+    }

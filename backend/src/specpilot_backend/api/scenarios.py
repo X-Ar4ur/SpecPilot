@@ -1,7 +1,15 @@
+import httpx
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from specpilot_backend.config import get_settings
+from specpilot_backend.fixtures.binding_service import (
+    FixtureNotConfiguredError,
+    ScenarioNotFoundError,
+    get_binding_status,
+)
+from specpilot_backend.fixtures.fourga_client import FourgaApiError
+from specpilot_backend.fixtures.models import ScenarioBindingStatus
 from specpilot_backend.ingestion.chunker import ManualChunk
 from specpilot_backend.services import manual_pipeline
 from specpilot_backend.services.persistence import (
@@ -80,6 +88,23 @@ def get_scenario(scenario_id: str) -> dict[str, object]:
     if scenario is None:
         raise HTTPException(status_code=404, detail="Scenario not found")
     return scenario
+
+
+@router.get("/{scenario_id}/binding")
+async def get_scenario_binding(scenario_id: str) -> ScenarioBindingStatus:
+    try:
+        return await get_binding_status(scenario_id)
+    except ScenarioNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Scenario not found") from exc
+    except FixtureNotConfiguredError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except FourgaApiError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except httpx.HTTPError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail="could not reach the 4ga target instance",
+        ) from exc
 
 
 def _scenario_title(scenario_id: str) -> object:
