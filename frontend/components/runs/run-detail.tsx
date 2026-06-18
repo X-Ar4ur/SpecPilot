@@ -37,7 +37,7 @@ export function RunDetail({ runId }: { runId: string }) {
 
   if (runQuery.isLoading) {
     return (
-      <section className="rounded-lg border border-line bg-white p-6 text-sm text-slate-500">
+      <section className="sp-card p-6 text-sm text-slate-400">
         加载执行结果中
       </section>
     );
@@ -45,7 +45,7 @@ export function RunDetail({ runId }: { runId: string }) {
 
   if (runQuery.isError || !run) {
     return (
-      <section className="rounded-lg border border-red-200 bg-red-50 p-6 text-sm text-fail">
+      <section className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-fail shadow-card">
         执行记录不可用
       </section>
     );
@@ -53,14 +53,14 @@ export function RunDetail({ runId }: { runId: string }) {
 
   return (
     <div className="space-y-5">
-      <section className="rounded-lg border border-line bg-white p-5">
+      <section className="sp-card sp-rise sp-d1 p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-run">
-              {run.run_id}
-            </p>
-            <h2 className="mt-1 text-xl font-semibold">执行结果详情</h2>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="sp-kicker">{run.run_id}</p>
+            <h2 className="mt-2 font-display text-xl font-semibold">
+              执行结果详情
+            </h2>
+            <p className="mt-2 font-mono text-xs text-slate-500">
               场景：{run.scenario_ids.join(", ")}
             </p>
           </div>
@@ -74,11 +74,11 @@ export function RunDetail({ runId }: { runId: string }) {
         </div>
       </section>
 
-      <section className="rounded-lg border border-line bg-white p-5">
+      <section className="sp-card sp-rise sp-d2 p-5">
         <h3 className="text-sm font-semibold">Artifact 目录</h3>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-md bg-slate-50 px-3 py-2 text-sm">
-          <div className="flex min-w-0 items-center gap-2 font-mono text-slate-700">
-            <Folder size={16} className="shrink-0" />
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-slate-50/70 px-3 py-2.5 text-sm">
+          <div className="flex min-w-0 items-center gap-2 font-mono text-xs text-slate-600">
+            <Folder size={16} className="shrink-0 text-brand" />
             <span className="truncate">{run.artifact_dir}</span>
           </div>
           <div className="flex items-center gap-2">
@@ -100,36 +100,36 @@ export function RunDetail({ runId }: { runId: string }) {
           </div>
         </div>
         {!hasJsonReport && !hasHtmlReport ? (
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-slate-400">
             当前 run 尚未生成 report.json 或 report.html。
           </p>
         ) : null}
       </section>
 
-      <section className="rounded-lg border border-line bg-white p-5">
+      <section className="sp-card sp-rise sp-d3 p-5">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Bot size={17} className="text-run" />
+            <Bot size={17} className="text-brand" />
             <h3 className="text-sm font-semibold">browser-use 控制台日志</h3>
           </div>
-          <span className="rounded border border-line px-2 py-1 text-xs text-slate-500">
+          <span className="sp-chip border-line bg-slate-50 font-mono text-slate-500">
             {browserUseLogs.length} logs
           </span>
         </div>
         {browserUseLogs.length === 0 ? (
-          <div className="rounded-md bg-slate-50 px-3 py-8 text-center text-sm text-slate-500">
-            当前 run 没有捕获到 browser-use 日志。
-          </div>
+          <div className="sp-empty">当前 run 没有捕获到 browser-use 日志。</div>
         ) : (
-          <div className="max-h-[420px] overflow-auto rounded-md bg-slate-950 p-3 font-mono text-xs text-slate-100">
+          <div className="sp-panel-dark max-h-[420px] overflow-auto p-3 font-mono text-xs">
             {browserUseLogs.map((log) => (
               <div key={log.id} className="border-b border-white/10 py-2 last:border-0">
                 <div className="mb-1 flex flex-wrap items-center gap-2 text-slate-400">
                   <span>{formatTime(log.ts)}</span>
-                  <span className="rounded bg-white/10 px-2 py-0.5">{log.level}</span>
+                  <span className="rounded-full bg-white/10 px-2 py-0.5">{log.level}</span>
                   <span>{log.logger}</span>
                 </div>
-                <p className="whitespace-pre-wrap break-words leading-5">{log.text}</p>
+                <p className="whitespace-pre-wrap break-words leading-5 text-slate-200">
+                  {log.text}
+                </p>
               </div>
             ))}
           </div>
@@ -137,9 +137,9 @@ export function RunDetail({ runId }: { runId: string }) {
       </section>
 
       <div className="grid gap-5 xl:grid-cols-2">
-        <section className="rounded-lg border border-line bg-white p-5">
+        <section className="sp-card sp-rise sp-d4 p-5">
           <h3 className="mb-3 text-sm font-semibold">失败分类</h3>
-          <pre className="max-h-[360px] overflow-auto rounded-md bg-slate-950 p-4 text-xs text-slate-100">
+          <pre className="max-h-[360px] overflow-auto rounded-xl bg-night p-4 font-mono text-xs leading-5 text-slate-100">
             {JSON.stringify(
               {
                 primary: run.failure_primary,
@@ -151,9 +151,9 @@ export function RunDetail({ runId }: { runId: string }) {
             )}
           </pre>
         </section>
-        <section className="rounded-lg border border-line bg-white p-5">
+        <section className="sp-card sp-rise sp-d5 p-5">
           <h3 className="mb-3 text-sm font-semibold">Run JSON</h3>
-          <pre className="max-h-[360px] overflow-auto rounded-md bg-slate-950 p-4 text-xs text-slate-100">
+          <pre className="max-h-[360px] overflow-auto rounded-xl bg-night p-4 font-mono text-xs leading-5 text-slate-100">
             {JSON.stringify(run, null, 2)}
           </pre>
         </section>
@@ -173,7 +173,7 @@ function ArtifactLink({
 }) {
   if (!enabled) {
     return (
-      <span className="inline-flex h-8 items-center gap-1 rounded-md border border-line px-3 text-xs text-slate-400">
+      <span className="inline-flex h-8 items-center gap-1 rounded-lg border border-line px-3 text-xs text-slate-400">
         <FileText size={14} />
         {label}
       </span>
@@ -181,7 +181,7 @@ function ArtifactLink({
   }
   return (
     <a
-      className="inline-flex h-8 items-center gap-1 rounded-md border border-line bg-white px-3 text-xs font-semibold text-ink hover:bg-slate-100"
+      className="inline-flex h-8 items-center gap-1 rounded-lg border border-line bg-white px-3 text-xs font-semibold text-ink transition-all duration-200 hover:-translate-y-px hover:border-slate-300 hover:shadow-card"
       href={href}
       rel="noreferrer"
       target="_blank"
@@ -203,7 +203,7 @@ function ReportLink({
 }) {
   if (!enabled) {
     return (
-      <span className="inline-flex h-8 items-center gap-1 rounded-md border border-line px-3 text-xs text-slate-400">
+      <span className="inline-flex h-8 items-center gap-1 rounded-lg border border-line px-3 text-xs text-slate-400">
         <Download size={14} />
         {label}
       </span>
@@ -211,7 +211,7 @@ function ReportLink({
   }
   return (
     <a
-      className="inline-flex h-8 items-center gap-1 rounded-md border border-line bg-white px-3 text-xs font-semibold text-ink hover:bg-slate-100"
+      className="inline-flex h-8 items-center gap-1 rounded-lg border border-line bg-white px-3 text-xs font-semibold text-ink transition-all duration-200 hover:-translate-y-px hover:border-slate-300 hover:shadow-card"
       href={href}
       rel="noreferrer"
       target="_blank"
@@ -232,12 +232,12 @@ function Metric({
   icon: ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-line bg-slate-50 p-4">
+    <div className="rounded-xl border border-line bg-slate-50/70 p-4">
       <div className="flex items-center justify-between">
         <p className="text-xs text-slate-500">{label}</p>
-        <span className="text-run">{icon}</span>
+        <span className="text-brand">{icon}</span>
       </div>
-      <p className="mt-2 truncate text-lg font-semibold">{value}</p>
+      <p className="sp-num mt-2 truncate text-lg font-semibold">{value}</p>
     </div>
   );
 }
@@ -253,7 +253,12 @@ function StatusBadge({ value }: { value: string }) {
           : value === "needs_review"
             ? "border-amber-200 bg-amber-50 text-warn"
             : "border-slate-200 bg-slate-50 text-slate-500";
-  return <span className={`w-fit rounded border px-3 py-1.5 text-sm ${classes}`}>{value}</span>;
+  return (
+    <span className={`sp-chip px-3 py-1.5 text-sm ${classes}`}>
+      <span className={`sp-chip-dot ${value === "running" ? "sp-pulse" : ""}`} />
+      {value}
+    </span>
+  );
 }
 
 function formatDuration(value: number | null) {

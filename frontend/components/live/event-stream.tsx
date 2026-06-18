@@ -26,16 +26,16 @@ const eventMeta = {
 export function EventStream({ events }: { events: TraceEvent[] }) {
   const visibleEvents = [...events].reverse();
   return (
-    <section className="flex min-h-[360px] flex-col rounded-lg border border-line bg-white">
+    <section className="sp-card sp-rise sp-d3 flex min-h-[360px] flex-col overflow-hidden">
       <div className="flex items-center justify-between border-b border-line px-4 py-3">
         <h3 className="text-sm font-semibold">实时事件流</h3>
-        <span className="rounded border border-line px-2 py-1 text-xs text-slate-500">
+        <span className="sp-chip border-line bg-slate-50 font-mono text-slate-500">
           {events.length} events
         </span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
         {visibleEvents.length === 0 ? (
-          <div className="grid h-48 place-items-center text-sm text-slate-500">
+          <div className="grid h-48 place-items-center text-sm text-slate-400">
             等待 SSE 事件
           </div>
         ) : (
@@ -58,33 +58,33 @@ function EventItem({ event }: { event: TraceEvent }) {
     return <BrowserUseLogItem event={event} log={browserUseLog} />;
   }
   return (
-    <article className="rounded-md border border-line bg-slate-50 px-3 py-2 text-sm">
+    <article className="rounded-xl border border-line bg-slate-50/70 px-3 py-2 text-sm transition-colors hover:bg-slate-50">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-2">
-          <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded bg-white text-run">
+          <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-white text-brand shadow-[0_1px_2px_rgba(16,26,46,0.06)]">
             <Icon size={14} />
           </span>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-medium">{meta.label}</span>
               {event.node ? (
-                <span className="rounded bg-white px-2 py-0.5 text-xs text-slate-500">
+                <span className="rounded-full bg-white px-2 py-0.5 font-mono text-xs text-slate-500">
                   {event.node}
                 </span>
               ) : null}
               {event.status ? <StatusPill value={event.status} /> : null}
             </div>
-            <p className="mt-1 break-words text-slate-700">
+            <p className="mt-1 break-words text-slate-600">
               {event.message ?? summarizePayload(event.payload)}
             </p>
           </div>
         </div>
-        <time className="shrink-0 text-xs text-slate-400">
+        <time className="shrink-0 font-mono text-xs text-slate-400">
           {formatTime(event.ts)}
         </time>
       </div>
       {Object.keys(event.payload).length > 0 ? (
-        <pre className="mt-2 max-h-32 overflow-auto rounded bg-slate-950 p-2 text-[11px] text-slate-100">
+        <pre className="mt-2 max-h-32 overflow-auto rounded-lg bg-night p-2 font-mono text-[11px] leading-4 text-slate-100">
           {JSON.stringify(event.payload, null, 2)}
         </pre>
       ) : null}
@@ -100,14 +100,14 @@ function BrowserUseLogItem({
   log: { level: string; logger: string; text: string };
 }) {
   return (
-    <article className="rounded-md border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-slate-100">
+    <article className="rounded-xl border border-white/10 bg-night px-3 py-2 font-mono text-xs text-slate-100">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="mb-1 flex flex-wrap items-center gap-2">
-            <span className="rounded bg-blue-500/15 px-2 py-0.5 text-blue-200">
+            <span className="rounded-full bg-blue-500/15 px-2 py-0.5 text-blue-200">
               browser-use
             </span>
-            <span className="rounded bg-white/10 px-2 py-0.5 text-slate-300">
+            <span className="rounded-full bg-white/10 px-2 py-0.5 text-slate-300">
               {log.level}
             </span>
             <span className="truncate text-slate-400">{log.logger}</span>
@@ -131,7 +131,9 @@ function StatusPill({ value }: { value: string }) {
           : value === "needs_review" || value === "retrying"
             ? "bg-amber-50 text-warn"
             : "bg-white text-slate-500";
-  return <span className={`rounded px-2 py-0.5 text-xs ${classes}`}>{value}</span>;
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-xs ${classes}`}>{value}</span>
+  );
 }
 
 function summarizePayload(payload: Record<string, unknown>) {

@@ -127,15 +127,18 @@ export function SettingsDrawer() {
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-40 bg-ink/30" />
-        <Dialog.Content className="fixed right-0 top-0 z-50 flex h-full w-full max-w-[560px] flex-col border-l border-line bg-white shadow-2xl">
-          <div className="flex h-16 items-center justify-between border-b border-line px-5">
+        <Dialog.Overlay className="sp-overlay-in fixed inset-0 z-40 bg-ink/35 backdrop-blur-[2px]" />
+        <Dialog.Content className="sp-drawer-in fixed bottom-2 right-2 top-2 z-50 flex w-full max-w-[560px] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-lift">
+          <div className="flex h-16 shrink-0 items-center justify-between border-b border-line px-5">
             <div className="flex items-center gap-3">
-              <div className="grid h-9 w-9 place-items-center rounded-md bg-ink text-white">
+              <div
+                className="grid h-9 w-9 place-items-center rounded-xl text-white"
+                style={{ background: "var(--sp-gradient)" }}
+              >
                 <Settings2 size={18} />
               </div>
               <div>
-                <Dialog.Title className="text-base font-semibold">
+                <Dialog.Title className="font-display text-base font-semibold">
                   系统设置
                 </Dialog.Title>
                 <Dialog.Description className="text-xs text-slate-500">
@@ -143,7 +146,7 @@ export function SettingsDrawer() {
                 </Dialog.Description>
               </div>
             </div>
-            <Dialog.Close className="grid h-9 w-9 place-items-center rounded-md border border-line text-slate-600 hover:bg-slate-50">
+            <Dialog.Close className="sp-icon-btn">
               <X size={18} />
             </Dialog.Close>
           </div>
@@ -158,7 +161,7 @@ export function SettingsDrawer() {
                       使用 OpenAI-compatible / Codex API 格式接入文本模型。
                     </p>
                   </div>
-                  <span className="rounded border border-blue-100 bg-blue-50 px-2 py-1 text-xs font-medium text-run">
+                  <span className="sp-chip border-blue-100 bg-blue-50 text-run">
                     OpenAI-compatible
                   </span>
                 </div>
@@ -169,7 +172,7 @@ export function SettingsDrawer() {
                       key={preset.label}
                       type="button"
                       onClick={() => applyPreset(index)}
-                      className="rounded-md border border-line px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-run"
+                      className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-all duration-200 hover:border-blue-200 hover:bg-blue-50 hover:text-run"
                     >
                       {preset.label}
                     </button>
@@ -211,7 +214,7 @@ export function SettingsDrawer() {
                   onChange={setBaseUrl}
                   placeholder="https://clauddy.com/v1"
                 />
-                <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-warn">
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-warn">
                   填写兼容 OpenAI Chat Completions 格式的服务端点根地址。
                 </div>
                 <TextInput
@@ -237,19 +240,23 @@ export function SettingsDrawer() {
                 />
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <label>
-                    <span className="mb-1 block text-slate-600">τ_high</span>
+                    <span className="mb-1 block text-xs font-medium text-slate-500">
+                      τ_high
+                    </span>
                     <input
                       value="0.85"
                       readOnly
-                      className="h-10 w-full rounded-md border border-line bg-slate-50 px-3 text-slate-500"
+                      className="sp-input w-full bg-slate-50 font-mono text-slate-500"
                     />
                   </label>
                   <label>
-                    <span className="mb-1 block text-slate-600">τ_low</span>
+                    <span className="mb-1 block text-xs font-medium text-slate-500">
+                      τ_low
+                    </span>
                     <input
                       value="0.60"
                       readOnly
-                      className="h-10 w-full rounded-md border border-line bg-slate-50 px-3 text-slate-500"
+                      className="sp-input w-full bg-slate-50 font-mono text-slate-500"
                     />
                   </label>
                 </div>
@@ -259,21 +266,21 @@ export function SettingsDrawer() {
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-semibold">Doctor 检查</h3>
                   <span
-                    className={`rounded border px-2 py-1 text-xs ${doctorStatusClass(doctor?.status)}`}
+                    className={`sp-chip ${doctorStatusClass(doctor?.status)}`}
                   >
                     {doctorStatusText(doctor?.status, doctorQuery.isLoading)}
                   </span>
                 </div>
-                <div className="divide-y divide-line rounded-md border border-line">
+                <div className="divide-y divide-line overflow-hidden rounded-xl border border-line">
                   {doctor ? (
                     Object.entries(doctor.checks).map(([name, check]) => (
                       <div
                         key={name}
-                        className="grid grid-cols-[150px_72px_1fr] items-center gap-3 px-3 py-2 text-xs"
+                        className="grid grid-cols-[150px_72px_minmax(0,1fr)] items-center gap-3 px-3 py-2.5 text-xs odd:bg-slate-50/50"
                       >
                         <span className="font-mono text-slate-600">{name}</span>
                         <span
-                          className={`rounded border px-2 py-0.5 text-center ${doctorStatusClass(check.status)}`}
+                          className={`rounded-full border px-2 py-0.5 text-center ${doctorStatusClass(check.status)}`}
                         >
                           {doctorStatusText(check.status, false)}
                         </span>
@@ -295,23 +302,23 @@ export function SettingsDrawer() {
               </section>
 
               {settingsQuery.isError ? (
-                <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-fail">
+                <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-fail">
                   设置接口暂不可用
                 </p>
               ) : null}
               {mutation.isError ? (
-                <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-fail">
+                <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-fail">
                   保存失败，请检查后端设置接口
                 </p>
               ) : null}
               {mutation.isSuccess ? (
-                <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-pass">
+                <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-pass">
                   设置已写入 .env，后续新执行任务将使用新配置
                 </p>
               ) : null}
             </div>
 
-            <div className="flex items-center justify-between border-t border-line px-5 py-4">
+            <div className="flex shrink-0 items-center justify-between border-t border-line bg-slate-50/60 px-5 py-4">
               <div className="flex items-center gap-2 text-xs text-slate-500">
                 <KeyRound size={15} />
                 已保存密钥不会回显，留空不会覆盖
@@ -319,7 +326,7 @@ export function SettingsDrawer() {
               <button
                 type="submit"
                 disabled={mutation.isPending}
-                className="inline-flex h-10 items-center gap-2 rounded-md bg-ink px-4 text-sm font-semibold text-white disabled:opacity-60"
+                className="sp-btn-primary"
               >
                 {mutation.isPending ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -379,12 +386,14 @@ function TextInput({
 }) {
   return (
     <label className="block text-sm">
-      <span className="mb-1 block text-slate-600">{label}</span>
+      <span className="mb-1 block text-xs font-medium text-slate-500">
+        {label}
+      </span>
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="h-10 w-full rounded-md border border-line px-3 outline-none focus:border-run"
+        className="sp-input w-full"
       />
     </label>
   );
@@ -403,10 +412,10 @@ function SecretInput({
 }) {
   return (
     <label className="block text-sm">
-      <span className="mb-1 flex items-center justify-between text-slate-600">
+      <span className="mb-1 flex items-center justify-between text-xs font-medium text-slate-500">
         <span>{label}</span>
         <span
-          className={`rounded border px-2 py-0.5 text-xs ${statusClass(configured)}`}
+          className={`rounded-full border px-2 py-0.5 text-xs ${statusClass(configured)}`}
         >
           {statusText(configured)}
         </span>
@@ -417,7 +426,7 @@ function SecretInput({
         onChange={(event) => onChange(event.target.value)}
         placeholder="填写新密钥"
         autoComplete="new-password"
-        className="h-10 w-full rounded-md border border-line px-3 outline-none focus:border-run"
+        className="sp-input w-full"
       />
     </label>
   );

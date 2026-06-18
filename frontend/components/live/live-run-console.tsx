@@ -132,14 +132,14 @@ export function LiveRunConsole({ runId }: { runId: string }) {
 
   return (
     <div className="space-y-5">
-      <section className="rounded-lg border border-line bg-white p-4">
+      <section className="sp-card sp-rise p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-run">
-              Live Run
-            </p>
-            <h2 className="mt-1 text-2xl font-semibold">{runId}</h2>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="sp-kicker">Live Run</p>
+            <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight">
+              {runId}
+            </h2>
+            <p className="mt-2 text-sm text-slate-500">
               SSE TraceEvent、LangGraph 节点、browser_frame 和 artifact 截图时间线。
             </p>
           </div>
@@ -171,13 +171,17 @@ export function LiveRunConsole({ runId }: { runId: string }) {
           />
         </div>
         {sseError ? (
-          <div className="mt-4 flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-warn">
+          <div className="mt-4 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-warn">
             <AlertTriangle size={16} />
             SSE 暂不可用：{sseError}
           </div>
         ) : (
-          <div className="mt-4 flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-pass">
-            {events.length === 0 ? <Loader2 size={16} className="animate-spin" /> : <Radio size={16} />}
+          <div className="mt-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-pass">
+            {events.length === 0 ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Radio size={16} className="sp-pulse" />
+            )}
             {events.length === 0 ? "正在等待事件 / trace 回放" : "事件流已接收"}
           </div>
         )}
@@ -216,7 +220,7 @@ function FinalPanel({
   classification: TraceEvent | undefined;
 }) {
   return (
-    <section className="rounded-lg border border-line bg-white p-4">
+    <section className="sp-card p-4">
       <div className="mb-3 flex items-center gap-2">
         {verdict === "pass" ? (
           <CheckCircle2 className="text-pass" size={18} />
@@ -242,8 +246,8 @@ function FinalPanel({
 
 function SummaryMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-line bg-slate-50 px-3 py-2">
-      <p className="text-xs text-slate-500">{label}</p>
+    <div className="rounded-xl border border-line bg-slate-50/70 px-3 py-2.5">
+      <p className="text-xs text-slate-400">{label}</p>
       <p className="mt-1 truncate text-sm font-semibold">{value}</p>
     </div>
   );
@@ -251,8 +255,8 @@ function SummaryMetric({ label, value }: { label: string; value: string }) {
 
 function KeyValue({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md bg-slate-50 px-3 py-2">
-      <span className="mr-2 font-mono text-xs text-slate-500">{label}</span>
+    <div className="rounded-xl border border-line bg-slate-50/70 px-3 py-2">
+      <span className="mr-2 font-mono text-xs text-brand">{label}</span>
       <span>{value || "--"}</span>
     </div>
   );
@@ -267,7 +271,16 @@ function StatusBadge({ value }: { value: string }) {
         : value.includes("review") || value === "retrying"
           ? "border-amber-200 bg-amber-50 text-warn"
           : "border-blue-200 bg-blue-50 text-run";
-  return <span className={`rounded border px-3 py-1.5 text-sm ${classes}`}>{value}</span>;
+  return (
+    <span className={`sp-chip px-3 py-1.5 text-sm ${classes}`}>
+      <span
+        className={`sp-chip-dot ${
+          value === "running" || value === "connecting" ? "sp-pulse" : ""
+        }`}
+      />
+      {value}
+    </span>
+  );
 }
 
 function frameFromEvent(runId: string, event: TraceEvent): BrowserFrame | null {

@@ -30,13 +30,21 @@ import { api } from "../lib/api";
 import type { Run } from "../lib/types";
 
 const statusColors = {
-  pass: "#15803D",
-  fail: "#DC2626",
-  needs_review: "#B45309",
-  running: "#2563EB",
+  pass: "#0B8F5F",
+  fail: "#DF3340",
+  needs_review: "#B26205",
+  running: "#2B5CE6",
   queued: "#64748B",
-  error: "#DC2626",
+  error: "#DF3340",
   cancelled: "#64748B",
+};
+
+const chartTooltipStyle = {
+  borderRadius: 12,
+  border: "1px solid #E3E8F1",
+  boxShadow: "0 10px 28px -14px rgba(16,26,46,0.25)",
+  fontSize: 12,
+  padding: "8px 12px",
 };
 
 export default function Home() {
@@ -84,13 +92,13 @@ export default function Home() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
+      <header className="sp-rise flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-run">
-            Workbench
-          </p>
-          <h2 className="mt-1 text-2xl font-semibold">工作台</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+          <p className="sp-kicker">Workbench</p>
+          <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight">
+            工作台
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
             手册索引、场景生成、browser-use 执行与验证报告的集中视图。
           </p>
         </div>
@@ -113,50 +121,79 @@ export default function Home() {
           value={String(features.length)}
           hint="手册证据驱动"
           icon={<BookOpenText size={18} />}
+          delay="sp-d1"
         />
         <Metric
           label="测试场景"
           value={String(scenarios.length)}
           hint="自然语言步骤"
           icon={<ListChecks size={18} />}
+          delay="sp-d2"
         />
         <Metric
           label="运行中"
           value={String(runningCount)}
           hint="browser-use 本地执行"
           icon={<Activity size={18} />}
+          delay="sp-d3"
         />
         <Metric
           label="通过率"
           value={passRate}
           hint={`失败 ${failCount} 次`}
           icon={<ShieldCheck size={18} />}
+          delay="sp-d4"
         />
       </section>
 
       <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-        <section className="rounded-lg border border-line bg-white p-5">
+        <section className="sp-card sp-rise sp-d3 p-5">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-sm font-semibold">场景难度分布</h3>
-            <span className="text-xs text-slate-500">{scenarios.length} 条</span>
+            <span className="font-mono text-xs text-slate-400">
+              {scenarios.length} 条
+            </span>
           </div>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={difficultyData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="value" fill="#2563EB" radius={[4, 4, 0, 0]} />
+              <BarChart data={difficultyData} barSize={56}>
+                <defs>
+                  <linearGradient id="sp-bar" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#2B5CE6" />
+                    <stop offset="100%" stopColor="#0E7A6C" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="#EAEEF5"
+                />
+                <XAxis
+                  dataKey="name"
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fontSize: 12, fill: "#64748B" }}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fontSize: 12, fill: "#94A3B8" }}
+                />
+                <Tooltip
+                  cursor={{ fill: "rgba(43,92,230,0.05)" }}
+                  contentStyle={chartTooltipStyle}
+                />
+                <Bar dataKey="value" fill="url(#sp-bar)" radius={[8, 8, 2, 2]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </section>
 
-        <section className="rounded-lg border border-line bg-white p-5">
+        <section className="sp-card sp-rise sp-d4 p-5">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-sm font-semibold">失败分类分布</h3>
-            <span className="text-xs text-slate-500">最近执行记录</span>
+            <span className="font-mono text-xs text-slate-400">最近执行记录</span>
           </div>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -165,15 +202,17 @@ export default function Home() {
                   data={failureData}
                   dataKey="value"
                   nameKey="name"
-                  innerRadius={58}
+                  innerRadius={62}
                   outerRadius={96}
-                  paddingAngle={3}
+                  paddingAngle={4}
+                  cornerRadius={6}
+                  stroke="none"
                 >
                   {failureData.map((entry) => (
                     <Cell key={entry.name} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip contentStyle={chartTooltipStyle} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -181,27 +220,35 @@ export default function Home() {
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
-        <section className="rounded-lg border border-line bg-white">
+        <section className="sp-card sp-rise sp-d5 overflow-hidden">
           <div className="flex items-center justify-between border-b border-line px-5 py-4">
             <h3 className="text-sm font-semibold">最近执行</h3>
-            <Link href="/runs" className="text-sm text-run">
+            <Link
+              href="/runs"
+              className="text-sm font-medium text-run transition-colors hover:text-brand"
+            >
               查看全部
             </Link>
           </div>
           {runs.length === 0 ? (
-            <div className="px-5 py-10 text-sm text-slate-500">暂无执行记录</div>
+            <div className="px-5 py-10">
+              <div className="sp-empty">暂无执行记录</div>
+            </div>
           ) : (
             <div className="divide-y divide-line">
               {runs.slice(0, 5).map((run) => (
                 <div
                   key={run.run_id}
-                  className="grid grid-cols-[1fr_120px_120px] items-center px-5 py-3 text-sm"
+                  className="grid grid-cols-[1fr_120px_120px] items-center px-5 py-3 text-sm transition-colors hover:bg-slate-50/70"
                 >
-                  <Link href={`/runs/${run.run_id}`} className="font-medium">
+                  <Link
+                    href={`/runs/${run.run_id}`}
+                    className="truncate font-mono text-[13px] font-semibold text-ink hover:text-run"
+                  >
                     {run.run_id}
                   </Link>
                   <StatusBadge value={run.status} />
-                  <span className="text-right text-slate-500">
+                  <span className="text-right font-mono text-xs text-slate-500">
                     {formatDuration(run.duration_ms)}
                   </span>
                 </div>
@@ -210,13 +257,24 @@ export default function Home() {
           )}
         </section>
 
-        <section className="rounded-lg border border-line bg-[#111827] p-5 text-slate-100">
-          <h3 className="text-sm font-semibold">执行控制台</h3>
-          <div className="mt-4 space-y-3 font-mono text-sm">
+        <section className="sp-panel-dark sp-rise sp-d6 p-5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold">执行控制台</h3>
+            <span className="flex items-center gap-1.5">
+              <i className="h-2 w-2 rounded-full bg-fail/80" />
+              <i className="h-2 w-2 rounded-full bg-warn/80" />
+              <i className="h-2 w-2 rounded-full bg-pass/80" />
+            </span>
+          </div>
+          <div className="mt-4 space-y-2.5 font-mono text-[13px]">
             <ConsoleLine icon={<CheckCircle2 size={15} />} text="executor=browser-use" />
             <ConsoleLine icon={<Play size={15} />} text={`text_model=${model}`} />
             <ConsoleLine icon={<Clock3 size={15} />} text={`avg_duration=${avgDuration}`} />
             <ConsoleLine icon={<ShieldCheck size={15} />} text="scenario_mode=zero-locator" />
+            <div className="flex items-center gap-2 px-3 pt-1 text-emerald-300/90">
+              <span className="text-slate-500">$</span>
+              <span className="sp-pulse inline-block h-3.5 w-[7px] bg-emerald-300/80" />
+            </div>
           </div>
         </section>
       </div>
@@ -229,22 +287,26 @@ function Metric({
   value,
   hint,
   icon,
+  delay,
 }: {
   label: string;
   value: string;
   hint: string;
   icon: ReactNode;
+  delay: string;
 }) {
   return (
-    <article className="rounded-lg border border-line bg-white p-5">
+    <article className={`sp-card sp-card-hover sp-rise ${delay} p-5`}>
       <div className="flex items-center justify-between">
         <p className="text-sm text-slate-500">{label}</p>
-        <span className="grid h-8 w-8 place-items-center rounded-md bg-slate-100 text-run">
+        <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-soft text-brand">
           {icon}
         </span>
       </div>
-      <p className="mt-3 text-3xl font-semibold">{value}</p>
-      <p className="mt-2 text-xs text-slate-500">{hint}</p>
+      <p className="sp-num mt-3 text-3xl font-semibold tracking-tight">
+        {value}
+      </p>
+      <p className="mt-2 text-xs text-slate-400">{hint}</p>
     </article>
   );
 }
@@ -259,10 +321,7 @@ function ActionLink({
   children: ReactNode;
 }) {
   return (
-    <Link
-      href={href}
-      className="inline-flex h-10 items-center gap-2 rounded-md border border-line bg-white px-3 text-sm font-medium hover:bg-slate-50"
-    >
+    <Link href={href} className="sp-btn">
       {icon}
       {children}
     </Link>
@@ -271,9 +330,9 @@ function ActionLink({
 
 function ConsoleLine({ icon, text }: { icon: ReactNode; text: string }) {
   return (
-    <div className="flex items-center gap-2 rounded-md bg-white/5 px-3 py-2">
-      <span className="text-run">{icon}</span>
-      <span>{text}</span>
+    <div className="flex items-center gap-2 rounded-lg bg-white/[0.04] px-3 py-2 ring-1 ring-white/[0.06]">
+      <span className="text-emerald-300/90">{icon}</span>
+      <span className="text-slate-200">{text}</span>
     </div>
   );
 }
@@ -283,9 +342,10 @@ function StatusBadge({ value }: { value: string }) {
     statusColors[value as keyof typeof statusColors] ?? statusColors.queued;
   return (
     <span
-      className="w-fit rounded border px-2 py-1 text-xs"
-      style={{ borderColor: `${color}33`, backgroundColor: `${color}12`, color }}
+      className="sp-chip"
+      style={{ borderColor: `${color}30`, backgroundColor: `${color}10`, color }}
     >
+      <span className="sp-chip-dot" />
       {value}
     </span>
   );
@@ -300,9 +360,9 @@ function summarizeFailures(runs: Run[]) {
   });
   const entries = Array.from(counts.entries());
   if (entries.length === 0) {
-    return [{ name: "暂无失败", value: 1, color: "#CBD5E1" }];
+    return [{ name: "暂无失败", value: 1, color: "#D8DfEA" }];
   }
-  const palette = ["#DC2626", "#B45309", "#2563EB", "#15803D", "#7C3AED"];
+  const palette = ["#DF3340", "#B26205", "#2B5CE6", "#0E7A6C", "#7C3AED"];
   return entries.map(([name, value], index) => ({
     name,
     value,

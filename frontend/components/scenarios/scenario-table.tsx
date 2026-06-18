@@ -72,14 +72,14 @@ export function ScenarioTable() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="sp-rise sp-d1 flex flex-wrap items-center gap-2">
         <div className="relative min-w-[260px] flex-1">
-          <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
+          <Search className="absolute left-3 top-3 text-slate-400" size={16} />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="搜索场景、功能点或 ID"
-            className="h-10 w-full rounded-md border border-line bg-white pl-9 pr-3 text-sm outline-none focus:border-run"
+            className="sp-input w-full pl-9"
           />
         </div>
         <SelectFilter
@@ -105,15 +105,15 @@ export function ScenarioTable() {
         />
       </div>
 
-      <section className="overflow-hidden rounded-lg border border-line bg-white">
-        <div className="grid grid-cols-[1.4fr_0.7fr_0.55fr_0.55fr_0.7fr_0.7fr_120px] border-b border-line bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-500">
-          <span>场景</span>
-          <span>功能点</span>
-          <span>优先级</span>
-          <span>难度</span>
-          <span>审核</span>
-          <span>最近结果</span>
-          <span className="text-right">操作</span>
+      <section className="sp-card sp-rise sp-d2 overflow-hidden">
+        <div className="grid grid-cols-[1.4fr_0.7fr_0.55fr_0.55fr_0.7fr_0.7fr_120px] border-b border-line bg-slate-50/80 px-4 py-3">
+          <span className="sp-th">场景</span>
+          <span className="sp-th">功能点</span>
+          <span className="sp-th">优先级</span>
+          <span className="sp-th">难度</span>
+          <span className="sp-th">审核</span>
+          <span className="sp-th">最近结果</span>
+          <span className="sp-th text-right">操作</span>
         </div>
         {scenariosQuery.isError ? (
           <EmptyRow text="场景接口暂不可用" />
@@ -136,18 +136,18 @@ export function ScenarioTable() {
 
       <Dialog.Root open={drawerOpen} onOpenChange={setDrawerOpen}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-40 bg-ink/30" />
-          <Dialog.Content className="fixed right-0 top-0 z-50 flex h-full w-full max-w-[680px] flex-col border-l border-line bg-white shadow-2xl">
-            <div className="flex h-16 items-center justify-between border-b border-line px-5">
+          <Dialog.Overlay className="sp-overlay-in fixed inset-0 z-40 bg-ink/35 backdrop-blur-[2px]" />
+          <Dialog.Content className="sp-drawer-in fixed bottom-2 right-2 top-2 z-50 flex w-full max-w-[680px] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-lift">
+            <div className="flex h-16 shrink-0 items-center justify-between border-b border-line px-5">
               <div>
-                <Dialog.Title className="text-base font-semibold">
+                <Dialog.Title className="font-display text-base font-semibold">
                   场景详情
                 </Dialog.Title>
                 <Dialog.Description className="text-xs text-slate-500">
                   步骤、预期、证据和 JSON
                 </Dialog.Description>
               </div>
-              <Dialog.Close className="grid h-9 w-9 place-items-center rounded-md border border-line hover:bg-slate-50">
+              <Dialog.Close className="sp-icon-btn">
                 <X size={18} />
               </Dialog.Close>
             </div>
@@ -171,26 +171,33 @@ function ScenarioRow({
   running: boolean;
 }) {
   return (
-    <div className="grid grid-cols-[1.4fr_0.7fr_0.55fr_0.55fr_0.7fr_0.7fr_120px] items-center px-4 py-3 text-sm">
-      <div>
-        <p className="font-medium">{scenario.title}</p>
-        <p className="mt-1 text-xs text-slate-500">{scenario.scenario_id}</p>
+    <div className="grid grid-cols-[1.4fr_0.7fr_0.55fr_0.55fr_0.7fr_0.7fr_120px] items-center px-4 py-3 text-sm transition-colors hover:bg-slate-50/70">
+      <div className="min-w-0 pr-3">
+        <p className="truncate font-medium">{scenario.title}</p>
+        <p className="mt-1 truncate font-mono text-xs text-slate-400">
+          {scenario.scenario_id}
+        </p>
       </div>
-      <span className="truncate text-slate-600">{scenario.feature_id}</span>
-      <span>{priorityLabels[scenario.priority]}</span>
-      <span>{difficultyLabels[scenario.difficulty]}</span>
-      <span>{reviewLabels[scenario.review_status]}</span>
+      <span className="truncate pr-2 font-mono text-xs text-slate-500">
+        {scenario.feature_id}
+      </span>
+      <span>
+        <PriorityBadge value={scenario.priority} />
+      </span>
+      <span className="text-slate-600">{difficultyLabels[scenario.difficulty]}</span>
+      <span className="text-slate-600">{reviewLabels[scenario.review_status]}</span>
       <StatusBadge value={scenario.latest_result ?? "queued"} />
       <div className="flex justify-end gap-2">
         <button
-          className="grid h-9 w-9 place-items-center rounded-md border border-line hover:bg-slate-50"
+          className="sp-icon-btn"
           aria-label="查看详情"
           onClick={onDetail}
         >
           <Eye size={16} />
         </button>
         <button
-          className="grid h-9 w-9 place-items-center rounded-md bg-ink text-white disabled:opacity-60"
+          className="grid h-9 w-9 place-items-center rounded-xl text-white transition-all duration-200 hover:-translate-y-px hover:shadow-glow disabled:cursor-not-allowed disabled:opacity-60"
+          style={{ background: "var(--sp-gradient)" }}
           aria-label="运行场景"
           onClick={onRun}
           disabled={running}
@@ -211,14 +218,14 @@ function ScenarioDetail({
 }) {
   if (loading) {
     return (
-      <div className="grid flex-1 place-items-center text-sm text-slate-500">
+      <div className="grid flex-1 place-items-center text-sm text-slate-400">
         加载场景中
       </div>
     );
   }
   if (!scenario) {
     return (
-      <div className="grid flex-1 place-items-center text-sm text-slate-500">
+      <div className="grid flex-1 place-items-center text-sm text-slate-400">
         未选择场景
       </div>
     );
@@ -226,10 +233,10 @@ function ScenarioDetail({
   return (
     <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5">
       <section>
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-run">
-          {scenario.scenario_id}
-        </p>
-        <h2 className="mt-1 text-xl font-semibold">{scenario.title}</h2>
+        <p className="sp-kicker">{scenario.scenario_id}</p>
+        <h2 className="mt-2 font-display text-xl font-semibold">
+          {scenario.title}
+        </h2>
         <div className="mt-3 flex flex-wrap gap-2 text-xs">
           <Badge>{scenario.priority}</Badge>
           <Badge>{difficultyLabels[scenario.difficulty]}</Badge>
@@ -245,10 +252,13 @@ function ScenarioDetail({
         <ol className="space-y-2">
           {scenario.steps.map((step) => (
             <li key={step.order} className="flex gap-3 text-sm">
-              <span className="grid h-6 w-6 shrink-0 place-items-center rounded bg-slate-100 text-xs font-semibold">
+              <span
+                className="grid h-6 w-6 shrink-0 place-items-center rounded-lg font-mono text-xs font-semibold text-white"
+                style={{ background: "var(--sp-gradient)" }}
+              >
                 {step.order}
               </span>
-              <span>{step.action}</span>
+              <span className="leading-6">{step.action}</span>
             </li>
           ))}
         </ol>
@@ -256,14 +266,17 @@ function ScenarioDetail({
       <DetailSection title="预期结果">
         <div className="space-y-2">
           {scenario.expectations.map((expectation, index) => (
-            <div key={`${expectation.type}-${index}`} className="rounded-md border border-line px-3 py-2 text-sm">
+            <div
+              key={`${expectation.type}-${index}`}
+              className="rounded-xl border border-line px-3 py-2.5 text-sm"
+            >
               <div className="flex items-center justify-between gap-3">
                 <span className="font-medium">{expectation.description}</span>
-                <span className="rounded bg-slate-100 px-2 py-1 text-xs">
+                <span className="rounded-full bg-brand-soft px-2.5 py-1 font-mono text-xs text-brand">
                   {expectation.type}
                 </span>
               </div>
-              <pre className="mt-2 overflow-auto rounded bg-slate-950 p-3 text-xs text-slate-100">
+              <pre className="mt-2 overflow-auto rounded-lg bg-night p-3 font-mono text-xs leading-5 text-slate-100">
                 {JSON.stringify(expectation.params, null, 2)}
               </pre>
             </div>
@@ -275,7 +288,7 @@ function ScenarioDetail({
           {scenario.evidence_quotes.map((quote) => (
             <blockquote
               key={quote}
-              className="border-l-2 border-run bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-700"
+              className="rounded-r-xl border-l-2 border-brand bg-brand-soft/60 px-4 py-2.5 text-sm leading-6 text-slate-700"
             >
               {quote}
             </blockquote>
@@ -283,7 +296,7 @@ function ScenarioDetail({
         </div>
       </DetailSection>
       <DetailSection title="完整 JSON">
-        <pre className="max-h-[360px] overflow-auto rounded-md bg-slate-950 p-4 text-xs text-slate-100">
+        <pre className="max-h-[360px] overflow-auto rounded-xl bg-night p-4 font-mono text-xs leading-5 text-slate-100">
           {JSON.stringify(scenario, null, 2)}
         </pre>
       </DetailSection>
@@ -308,12 +321,12 @@ function DetailSection({
 
 function OrderedList({ items }: { items: string[] }) {
   if (items.length === 0) {
-    return <p className="text-sm text-slate-500">无</p>;
+    return <p className="text-sm text-slate-400">无</p>;
   }
   return (
     <ul className="space-y-2 text-sm">
       {items.map((item) => (
-        <li key={item} className="rounded-md border border-line px-3 py-2">
+        <li key={item} className="rounded-xl border border-line px-3 py-2">
           {item}
         </li>
       ))}
@@ -334,13 +347,13 @@ function SelectFilter({
 }) {
   return (
     <div className="relative">
-      {icon ? <span className="absolute left-3 top-2.5 text-slate-400">{icon}</span> : null}
+      {icon ? (
+        <span className="absolute left-3 top-3 text-slate-400">{icon}</span>
+      ) : null}
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className={`h-10 rounded-md border border-line bg-white pr-8 text-sm outline-none focus:border-run ${
-          icon ? "pl-9" : "pl-3"
-        }`}
+        className={`sp-input pr-8 ${icon ? "pl-9" : "pl-3"}`}
       >
         {options.map(([optionValue, label]) => (
           <option key={optionValue} value={optionValue}>
@@ -349,6 +362,20 @@ function SelectFilter({
         ))}
       </select>
     </div>
+  );
+}
+
+function PriorityBadge({ value }: { value: "P0" | "P1" | "P2" }) {
+  const classes =
+    value === "P0"
+      ? "border-red-200 bg-red-50 text-fail"
+      : value === "P1"
+        ? "border-amber-200 bg-amber-50 text-warn"
+        : "border-slate-200 bg-slate-50 text-slate-500";
+  return (
+    <span className={`sp-chip font-mono ${classes}`}>
+      {priorityLabels[value]}
+    </span>
   );
 }
 
@@ -361,13 +388,24 @@ function StatusBadge({ value }: { value: string }) {
         : value === "needs_review"
           ? "border-amber-200 bg-amber-50 text-warn"
           : "border-slate-200 bg-slate-50 text-slate-500";
-  return <span className={`w-fit rounded border px-2 py-1 text-xs ${classes}`}>{value}</span>;
+  return (
+    <span className={`sp-chip ${classes}`}>
+      <span className="sp-chip-dot" />
+      {value}
+    </span>
+  );
 }
 
 function Badge({ children }: { children: ReactNode }) {
-  return <span className="rounded border border-line px-2 py-1">{children}</span>;
+  return (
+    <span className="rounded-full border border-line bg-slate-50/70 px-2.5 py-1 text-slate-600">
+      {children}
+    </span>
+  );
 }
 
 function EmptyRow({ text }: { text: string }) {
-  return <div className="px-4 py-10 text-center text-sm text-slate-500">{text}</div>;
+  return (
+    <div className="px-4 py-10 text-center text-sm text-slate-400">{text}</div>
+  );
 }

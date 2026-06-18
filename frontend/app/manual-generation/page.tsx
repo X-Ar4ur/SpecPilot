@@ -159,19 +159,19 @@ export default function ManualGenerationPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
+      <header className="sp-rise flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-run">
-            Manual Generation
-          </p>
-          <h2 className="mt-1 text-2xl font-semibold">真实手册生成</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+          <p className="sp-kicker">Manual Generation</p>
+          <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight">
+            真实手册生成
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
             从 4ga Boards 英文用户/管理员手册生成可执行、证据对齐、零 locator 的测试资产。
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
-            className="inline-flex h-10 items-center gap-2 rounded-md bg-ink px-4 text-sm font-medium text-white disabled:opacity-60"
+            className="sp-btn-primary"
             onClick={() => stageActions.crawl()}
             disabled={isBusy}
           >
@@ -185,7 +185,7 @@ export default function ManualGenerationPage() {
             查看测试场景
           </LinkButton>
           <button
-            className="inline-flex h-10 items-center gap-2 rounded-md border border-line bg-white px-3 text-sm font-medium hover:bg-slate-50 disabled:opacity-60"
+            className="sp-btn"
             onClick={() => runP0Mutation.mutate()}
             disabled={runP0Mutation.isPending || !scenariosQuery.data?.items.length}
           >
@@ -196,8 +196,12 @@ export default function ManualGenerationPage() {
       </header>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        {readinessItems.map((item) => (
-          <ReadinessTile key={item.label} {...item} />
+        {readinessItems.map((item, index) => (
+          <ReadinessTile
+            key={item.label}
+            {...item}
+            delay={`sp-d${Math.min(index + 1, 6)}`}
+          />
         ))}
       </section>
 
@@ -217,11 +221,11 @@ export default function ManualGenerationPage() {
       </section>
 
       <div className="grid gap-5 xl:grid-cols-[1fr_420px]">
-        <section className="rounded-lg border border-line bg-white">
+        <section className="sp-card sp-rise sp-d3 overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
             <div>
               <h3 className="text-sm font-semibold">最近 job</h3>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 font-mono text-xs text-slate-400">
                 {job ? job.job_id : "尚未启动真实手册生成"}
               </p>
             </div>
@@ -245,13 +249,13 @@ export default function ManualGenerationPage() {
               <InfoRow label="当前阶段" value={job?.stage ?? "未开始"} />
             </div>
             {job?.error ? (
-              <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-fail">
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-fail">
                 <div className="font-semibold">失败原因</div>
                 <div className="mt-1 leading-6">{job.error || "未知异常"}</div>
               </div>
             ) : null}
             {job?.status === "succeeded" ? (
-              <div className="flex flex-wrap items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-pass">
+              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-pass">
                 <CheckCircle2 size={17} />
                 真实生成已完成，功能点和普通测试场景已刷新为手册产物。
               </div>
@@ -259,10 +263,10 @@ export default function ManualGenerationPage() {
           </div>
         </section>
 
-        <section className="rounded-lg border border-line bg-white">
+        <section className="sp-card sp-rise sp-d4 overflow-hidden">
           <div className="border-b border-line px-5 py-4">
             <h3 className="text-sm font-semibold">已抓取页面</h3>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-400">
               抓取阶段完成后会在这里显示页面标题、模块和 URL。
             </p>
           </div>
@@ -275,13 +279,15 @@ export default function ManualGenerationPage() {
                     href={page.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="grid gap-1 rounded-md border border-line px-3 py-2 text-sm hover:bg-slate-50"
+                    className="grid gap-1 rounded-xl border border-line px-3 py-2.5 text-sm transition-all duration-200 hover:-translate-y-px hover:border-slate-300 hover:shadow-card"
                   >
                     <span className="font-medium text-ink">{page.title}</span>
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-slate-400">
                       {page.module} / {page.manual_section}
                     </span>
-                    <span className="break-all text-xs text-run">{page.url}</span>
+                    <span className="break-all font-mono text-xs text-run">
+                      {page.url}
+                    </span>
                   </a>
                 ))}
               </div>
@@ -291,10 +297,10 @@ export default function ManualGenerationPage() {
           </div>
         </section>
 
-        <section className="rounded-lg border border-line bg-white">
+        <section className="sp-card sp-rise sp-d5 overflow-hidden">
           <div className="border-b border-line px-5 py-4">
             <h3 className="text-sm font-semibold">已提取功能点</h3>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-400">
               提取阶段完成后会显示本次 job 的功能点预览。
             </p>
           </div>
@@ -307,10 +313,10 @@ export default function ManualGenerationPage() {
           </div>
         </section>
 
-        <section className="rounded-lg border border-line bg-white">
+        <section className="sp-card sp-rise sp-d5 overflow-hidden">
           <div className="border-b border-line px-5 py-4">
             <h3 className="text-sm font-semibold">诊断信息</h3>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-400">
               warnings 和失败 error 会集中显示，便于判断是否可继续从中间阶段重跑。
             </p>
           </div>
@@ -319,9 +325,9 @@ export default function ManualGenerationPage() {
               result.warnings.map((warning, index) => (
                 <div
                   key={`${warning.stage}-${warning.scope}-${index}`}
-                  className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-warn"
+                  className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-warn"
                 >
-                  <div className="font-semibold">
+                  <div className="font-mono text-xs font-semibold">
                     {warning.stage} / {warning.scope}
                   </div>
                   <div className="mt-1 leading-5">{warning.message || "未知异常"}</div>
@@ -331,7 +337,7 @@ export default function ManualGenerationPage() {
               <EmptyState text="暂无 warning。" />
             )}
             {job?.error ? (
-              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-fail">
+              <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-fail">
                 <div className="font-semibold">失败 error</div>
                 <div className="mt-1 leading-5">{job.error || "未知异常"}</div>
               </div>
@@ -339,16 +345,16 @@ export default function ManualGenerationPage() {
           </div>
         </section>
 
-        <section className="rounded-lg border border-line bg-[#111827] p-5 text-slate-100">
+        <section className="sp-panel-dark sp-rise sp-d6 p-5">
           <h3 className="text-sm font-semibold">生产路径约束</h3>
-          <div className="mt-4 space-y-3 text-sm">
+          <div className="mt-4 space-y-2.5 text-[13px]">
             <ConsoleLine icon={<ShieldCheck size={15} />} text="scenario_mode=zero-locator" />
             <ConsoleLine icon={<Database size={15} />} text="vector_store=ChromaDB" />
             <ConsoleLine icon={<FileSearch size={15} />} text="scope=user/admin manual only" />
             <ConsoleLine icon={<Sparkles size={15} />} text="generation=model-driven evidence quotes" />
           </div>
           <div className="mt-5 border-t border-white/10 pt-4">
-            <h4 className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+            <h4 className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
               产物入口
             </h4>
             <div className="mt-3 grid gap-2">
@@ -384,24 +390,28 @@ function ReadinessTile({
   label,
   status,
   detail,
+  delay,
 }: {
   label: string;
   status: string;
   detail: string;
+  delay: string;
 }) {
   const classes =
     status === "ok"
-      ? "border-emerald-200 bg-emerald-50 text-pass"
+      ? "border-emerald-200/80 bg-emerald-50/80 text-pass"
       : status === "error"
-        ? "border-red-200 bg-red-50 text-fail"
-        : "border-amber-200 bg-amber-50 text-warn";
+        ? "border-red-200/80 bg-red-50/80 text-fail"
+        : "border-amber-200/80 bg-amber-50/80 text-warn";
   return (
-    <article className={`rounded-lg border px-4 py-3 ${classes}`}>
+    <article
+      className={`sp-rise ${delay} rounded-2xl border px-4 py-3 shadow-card backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5 ${classes}`}
+    >
       <div className="flex items-center justify-between gap-3">
         <span className="text-sm font-semibold">{label}</span>
         {status === "ok" ? <CheckCircle2 size={17} /> : <AlertTriangle size={17} />}
       </div>
-      <p className="mt-2 line-clamp-2 text-xs leading-5">{detail}</p>
+      <p className="mt-2 line-clamp-2 text-xs leading-5 opacity-80">{detail}</p>
     </article>
   );
 }
@@ -426,24 +436,44 @@ function PhaseCard({
   const Icon = phase.icon;
   const state = phaseState(phase.id, job, loading);
   return (
-    <article className="rounded-lg border border-line bg-white p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="grid h-10 w-10 place-items-center rounded-md bg-slate-100 text-run">
+    <article
+      className={`sp-card sp-card-hover sp-rise sp-d${Math.min(index + 1, 6)} relative overflow-hidden p-5`}
+    >
+      <span className="sp-num pointer-events-none absolute -right-1 -top-4 select-none text-[64px] font-bold leading-none text-slate-100">
+        0{index + 1}
+      </span>
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="grid h-10 w-10 place-items-center rounded-xl bg-brand-soft text-brand">
           <Icon size={18} />
         </div>
-        <span className="text-xs text-slate-400">0{index + 1}</span>
       </div>
-      <h3 className="mt-4 text-base font-semibold">{phase.label}</h3>
-      <p className="mt-2 min-h-10 text-sm leading-5 text-slate-600">{phase.detail}</p>
-      <div className="mt-4 flex items-center gap-2 text-sm">
+      <h3 className="relative mt-4 font-display text-base font-semibold">
+        {phase.label}
+      </h3>
+      <p className="relative mt-2 min-h-10 text-sm leading-5 text-slate-500">
+        {phase.detail}
+      </p>
+      <div className="relative mt-4 flex items-center gap-2 text-sm">
         {state === "running" ? <Loader2 size={15} className="animate-spin text-run" /> : null}
         {state === "done" ? <CheckCircle2 size={15} className="text-pass" /> : null}
         {state === "failed" ? <AlertTriangle size={15} className="text-fail" /> : null}
         {state === "pending" ? <Clock3 size={15} className="text-slate-400" /> : null}
-        <span>{phaseStateLabel(state)}</span>
+        <span
+          className={
+            state === "running"
+              ? "font-medium text-run"
+              : state === "done"
+                ? "font-medium text-pass"
+                : state === "failed"
+                  ? "font-medium text-fail"
+                  : "text-slate-400"
+          }
+        >
+          {phaseStateLabel(state)}
+        </span>
       </div>
       <button
-        className="mt-4 inline-flex h-9 w-full items-center justify-center gap-2 rounded-md border border-line bg-white px-3 text-sm font-medium hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+        className="sp-btn relative mt-4 h-9 w-full"
         onClick={onRun}
         disabled={actionDisabled}
       >
@@ -495,7 +525,8 @@ function JobBadge({ status, muted }: { status: JobStatus; muted?: boolean }) {
           ? "border-blue-200 bg-blue-50 text-run"
           : "border-slate-200 bg-slate-50 text-slate-500";
   return (
-    <span className={`rounded border px-2 py-1 text-xs ${classes} ${muted ? "opacity-60" : ""}`}>
+    <span className={`sp-chip ${classes} ${muted ? "opacity-60" : ""}`}>
+      <span className={`sp-chip-dot ${status === "running" && !muted ? "sp-pulse" : ""}`} />
       {muted ? "未启动" : statusLabels[status]}
     </span>
   );
@@ -506,10 +537,10 @@ function ProgressBar({ value }: { value: number }) {
     <div>
       <div className="mb-2 flex items-center justify-between text-xs text-slate-500">
         <span>总体进度</span>
-        <span>{value}%</span>
+        <span className="font-mono">{value}%</span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-        <div className="h-full rounded-full bg-run transition-[width]" style={{ width: `${value}%` }} />
+      <div className="sp-progress-track">
+        <div className="sp-progress-fill" style={{ width: `${value}%` }} />
       </div>
     </div>
   );
@@ -517,17 +548,17 @@ function ProgressBar({ value }: { value: number }) {
 
 function Stat({ label, value }: { label: string; value: number | undefined }) {
   return (
-    <div className="rounded-md border border-line bg-slate-50 px-3 py-3">
+    <div className="rounded-xl border border-line bg-slate-50/70 px-3 py-3">
       <p className="text-xs text-slate-500">{label}</p>
-      <p className="mt-1 text-2xl font-semibold">{value ?? "--"}</p>
+      <p className="sp-num mt-1 text-2xl font-semibold">{value ?? "--"}</p>
     </div>
   );
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-line px-3 py-3 text-sm">
-      <div className="text-xs text-slate-500">{label}</div>
+    <div className="rounded-xl border border-line px-3 py-3 text-sm">
+      <div className="text-xs text-slate-400">{label}</div>
       <div className="mt-1 break-words font-medium">{value}</div>
     </div>
   );
@@ -537,15 +568,18 @@ function FeaturePreviewList({ features }: { features: Feature[] }) {
   return (
     <div className="space-y-2">
       {features.map((feature) => (
-        <article key={feature.feature_id} className="rounded-md border border-line px-3 py-3">
+        <article
+          key={feature.feature_id}
+          className="rounded-xl border border-line px-3 py-3 transition-colors hover:bg-slate-50/70"
+        >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h4 className="text-sm font-semibold">{feature.title}</h4>
-            <span className="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-600">
+            <span className="sp-chip border-slate-200 bg-slate-50 text-slate-600">
               {feature.module} / {Math.round(feature.confidence * 100)}%
             </span>
           </div>
-          <p className="mt-2 text-sm leading-5 text-slate-600">{feature.summary}</p>
-          <div className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-sm leading-5 text-slate-500">{feature.summary}</p>
+          <div className="mt-2 text-xs text-slate-400">
             证据 {feature.evidence_quotes.length} 条
           </div>
           <div className="mt-2 space-y-1">
@@ -555,7 +589,7 @@ function FeaturePreviewList({ features }: { features: Feature[] }) {
                 href={url}
                 target="_blank"
                 rel="noreferrer"
-                className="block break-all text-xs text-run hover:underline"
+                className="block break-all font-mono text-xs text-run hover:underline"
               >
                 {url}
               </a>
@@ -568,11 +602,7 @@ function FeaturePreviewList({ features }: { features: Feature[] }) {
 }
 
 function EmptyState({ text }: { text: string }) {
-  return (
-    <div className="rounded-md border border-dashed border-line px-3 py-6 text-center text-sm text-slate-500">
-      {text}
-    </div>
-  );
+  return <div className="sp-empty">{text}</div>;
 }
 
 function LinkButton({
@@ -585,10 +615,7 @@ function LinkButton({
   children: ReactNode;
 }) {
   return (
-    <Link
-      href={href}
-      className="inline-flex h-10 items-center gap-2 rounded-md border border-line bg-white px-3 text-sm font-medium hover:bg-slate-50"
-    >
+    <Link href={href} className="sp-btn">
       {icon}
       {children}
     </Link>
@@ -597,9 +624,9 @@ function LinkButton({
 
 function ConsoleLine({ icon, text }: { icon: ReactNode; text: string }) {
   return (
-    <div className="flex items-center gap-2 rounded-md bg-white/5 px-3 py-2 font-mono">
-      <span className="text-run">{icon}</span>
-      <span>{text}</span>
+    <div className="flex items-center gap-2 rounded-lg bg-white/[0.04] px-3 py-2 font-mono ring-1 ring-white/[0.06]">
+      <span className="text-emerald-300/90">{icon}</span>
+      <span className="text-slate-200">{text}</span>
     </div>
   );
 }
@@ -608,7 +635,7 @@ function DarkLink({ href, children }: { href: string; children: ReactNode }) {
   return (
     <Link
       href={href}
-      className="flex items-center justify-between rounded-md bg-white/5 px-3 py-2 text-sm hover:bg-white/10"
+      className="flex items-center justify-between rounded-lg bg-white/[0.04] px-3 py-2 text-sm text-slate-200 ring-1 ring-white/[0.06] transition-all duration-200 hover:translate-x-0.5 hover:bg-white/[0.09] hover:text-white"
     >
       {children}
     </Link>

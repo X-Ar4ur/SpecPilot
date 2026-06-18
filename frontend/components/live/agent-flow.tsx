@@ -38,9 +38,9 @@ const aliases: Record<string, string> = {
 };
 
 const statusClasses: Record<string, string> = {
-  pending: "border-slate-300 bg-white text-slate-500",
-  queued: "border-slate-300 bg-white text-slate-500",
-  running: "border-blue-300 bg-blue-50 text-run ring-2 ring-blue-100",
+  pending: "border-slate-200 bg-white text-slate-500",
+  queued: "border-slate-200 bg-white text-slate-500",
+  running: "border-blue-300 bg-blue-50 text-run ring-4 ring-blue-100/60",
   success: "border-emerald-300 bg-emerald-50 text-pass",
   pass: "border-emerald-300 bg-emerald-50 text-pass",
   failed: "border-red-300 bg-red-50 text-fail",
@@ -70,12 +70,12 @@ export function AgentFlow({ events }: { events: TraceEvent[] }) {
       data: {
         label: (
           <div className="min-w-[150px]">
-            <div className="text-xs font-semibold">{stage.label}</div>
-            <div className="mt-1 text-[11px] opacity-80">{status}</div>
+            <div className="font-mono text-xs font-semibold">{stage.label}</div>
+            <div className="mt-1 text-[11px] opacity-70">{status}</div>
           </div>
         ),
       },
-      className: `rounded-md border px-3 py-2 text-sm shadow-sm ${statusClasses[status] ?? statusClasses.pending}`,
+      className: `rounded-xl border px-3 py-2 text-sm shadow-card transition-all duration-300 ${statusClasses[status] ?? statusClasses.pending}`,
       type: "default",
     };
   });
@@ -96,12 +96,12 @@ export function AgentFlow({ events }: { events: TraceEvent[] }) {
     target,
     animated:
       stageStatus.get(source) === "running" || stageStatus.get(target) === "running",
-    markerEnd: { type: MarkerType.ArrowClosed },
-    style: { stroke: "#94A3B8" },
+    markerEnd: { type: MarkerType.ArrowClosed, color: "#94A3B8" },
+    style: { stroke: "#A8B4C6", strokeWidth: 1.5 },
   }));
 
   return (
-    <section className="h-[320px] rounded-lg border border-line bg-white">
+    <section className="sp-card sp-rise sp-d2 h-[320px] overflow-hidden">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -110,7 +110,7 @@ export function AgentFlow({ events }: { events: TraceEvent[] }) {
         nodesConnectable={false}
         elementsSelectable={false}
       >
-        <Background gap={18} color="#E2E8F0" />
+        <Background gap={20} color="#DDE4EE" />
         <Controls showInteractive={false} />
       </ReactFlow>
     </section>

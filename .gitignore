@@ -46,3 +46,9 @@ Thumbs.db
 /PPT输出
 /tools
 
+# Local 4ga Boards deployment (separate project, must not be committed here)
+/4gaBoards/
+
+# Claude Code local settings
+.claude/
+

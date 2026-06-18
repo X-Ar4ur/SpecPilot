@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
+import "@fontsource-variable/hanken-grotesk";
+import "@fontsource-variable/jetbrains-mono";
+
 import { AppShell } from "../components/app-shell/app-shell";
 import { Providers } from "../components/app-shell/providers";
 import "./globals.css";

@@ -33,29 +33,29 @@ export function RunHistory() {
 
   return (
     <div className="space-y-4">
-      <div className="relative max-w-xl">
-        <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
+      <div className="sp-rise sp-d1 relative max-w-xl">
+        <Search className="absolute left-3 top-3 text-slate-400" size={16} />
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="搜索 run、状态、场景或失败类型"
-          className="h-10 w-full rounded-md border border-line bg-white pl-9 pr-3 text-sm outline-none focus:border-run"
+          className="sp-input w-full pl-9"
         />
       </div>
-      <section className="overflow-hidden rounded-lg border border-line bg-white">
+      <section className="sp-card sp-rise sp-d2 overflow-hidden">
         <div className="overflow-x-auto">
           <div className="min-w-[1120px]">
             <div
-              className="grid items-center gap-4 border-b border-line bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-500"
+              className="grid items-center gap-4 border-b border-line bg-slate-50/80 px-4 py-3"
               style={{ gridTemplateColumns: runHistoryColumns }}
             >
-              <span>Run</span>
-              <span>场景</span>
-              <span className="text-center">状态</span>
-              <span>耗时</span>
-              <span>失败主因</span>
-              <span>报告</span>
-              <span className="text-right">详情</span>
+              <span className="sp-th">Run</span>
+              <span className="sp-th">场景</span>
+              <span className="sp-th text-center">状态</span>
+              <span className="sp-th">耗时</span>
+              <span className="sp-th">失败主因</span>
+              <span className="sp-th">报告</span>
+              <span className="sp-th text-right">详情</span>
             </div>
             {runsQuery.isError ? (
               <EmptyRow text="执行记录接口暂不可用" />
@@ -78,23 +78,23 @@ export function RunHistory() {
 function RunRow({ run }: { run: Run }) {
   return (
     <div
-      className="grid items-center gap-4 px-4 py-3 text-sm"
+      className="grid items-center gap-4 px-4 py-3 text-sm transition-colors hover:bg-slate-50/70"
       style={{ gridTemplateColumns: runHistoryColumns }}
     >
       <div className="min-w-0">
         <Link
           href={`/runs/${run.run_id}`}
           title={run.run_id}
-          className="block truncate font-mono text-sm font-semibold text-slate-900"
+          className="block truncate font-mono text-[13px] font-semibold text-ink transition-colors hover:text-run"
         >
           {run.run_id}
         </Link>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-slate-400">
           {formatDate(run.started_at)}
         </p>
       </div>
       <span
-        className="min-w-0 truncate text-slate-600"
+        className="min-w-0 truncate font-mono text-xs text-slate-500"
         title={run.scenario_ids.join(", ")}
       >
         {run.scenario_ids.join(", ")}
@@ -102,7 +102,7 @@ function RunRow({ run }: { run: Run }) {
       <div className="flex justify-center">
         <StatusBadge value={run.status} />
       </div>
-      <span className="flex items-center gap-1 text-slate-600 tabular-nums">
+      <span className="flex items-center gap-1 font-mono text-xs text-slate-500 tabular-nums">
         <Clock3 size={14} />
         {formatDuration(run.duration_ms)}
       </span>
@@ -110,16 +110,16 @@ function RunRow({ run }: { run: Run }) {
         {run.failure_primary ?? "--"}
       </span>
       <span
-        className="flex min-w-0 items-center gap-1 text-slate-600"
+        className="flex min-w-0 items-center gap-1 font-mono text-xs text-slate-500"
         title={run.report_id ?? "--"}
       >
-        <FileJson size={14} />
+        <FileJson size={14} className="shrink-0" />
         <span className="truncate">{run.report_id ?? "--"}</span>
       </span>
       <div className="text-right">
         <Link
           href={`/runs/${run.run_id}`}
-          className="rounded-md border border-line px-3 py-1.5 text-xs hover:bg-slate-50"
+          className="inline-flex items-center rounded-lg border border-line bg-white px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:-translate-y-px hover:border-slate-300 hover:shadow-card"
         >
           打开
         </Link>
@@ -139,7 +139,12 @@ function StatusBadge({ value }: { value: string }) {
           : value === "needs_review"
             ? "border-amber-200 bg-amber-50 text-warn"
             : "border-slate-200 bg-slate-50 text-slate-500";
-  return <span className={`w-fit rounded border px-2 py-1 text-xs ${classes}`}>{value}</span>;
+  return (
+    <span className={`sp-chip ${classes}`}>
+      <span className={`sp-chip-dot ${value === "running" ? "sp-pulse" : ""}`} />
+      {value}
+    </span>
+  );
 }
 
 function formatDuration(value: number | null) {
@@ -165,5 +170,7 @@ function formatDate(value: string | null) {
 }
 
 function EmptyRow({ text }: { text: string }) {
-  return <div className="px-4 py-10 text-center text-sm text-slate-500">{text}</div>;
+  return (
+    <div className="px-4 py-10 text-center text-sm text-slate-400">{text}</div>
+  );
 }

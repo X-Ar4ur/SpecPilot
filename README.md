@@ -51,7 +51,7 @@ Terminal 2, run the Chinese control console:
 
 ```bash
 cd frontend
-pnpm dev --hostname 127.0.0.1 --port 3000
+pnpm dev --hostname 127.0.0.1 --port 3002
 ```
 
 Then open the app at:
