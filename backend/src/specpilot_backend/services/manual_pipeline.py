@@ -91,6 +91,8 @@ class _ScenarioItem(BaseModel):
     requires_visual_check: bool = False
     review_status: str = "auto_validated"
     is_mutation: bool = False
+    data_dependency: str = "none"
+    fixtures: list[dict[str, object]] = Field(default_factory=list)
 
 
 class _ScenarioOutput(BaseModel):
