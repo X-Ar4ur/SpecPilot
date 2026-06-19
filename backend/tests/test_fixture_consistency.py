@@ -91,6 +91,30 @@ def test_self_seeding_without_fixtures_passes() -> None:
     _check(_payload(data_dependency="self_seeding", fixtures=[]))
 
 
+def test_interactive_allowed_attributes_pass() -> None:
+    _check(
+        _payload(
+            data_dependency="interactive",
+            fixtures=[{"ref": "target_card", "kind": "card"}],
+            test_data={
+                "a": "{{fixture.target_card.title}}",
+                "b": "{{fixture.target_card.list_name}}",
+            },
+        )
+    )
+
+
+def test_interactive_unknown_attribute_raises() -> None:
+    with pytest.raises(FixtureConsistencyError, match="unsupported attribute"):
+        _check(
+            _payload(
+                data_dependency="interactive",
+                fixtures=[{"ref": "target_card", "kind": "card"}],
+                test_data={"x": "{{fixture.target_card.assignee}}"},
+            )
+        )
+
+
 def test_scenario_prompt_documents_fixtures_and_tokens() -> None:
     assert "data_dependency" in SCENARIO_GENERATION_PROMPT
     assert '"fixtures"' in SCENARIO_GENERATION_PROMPT

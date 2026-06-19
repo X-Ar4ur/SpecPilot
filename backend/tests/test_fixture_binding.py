@@ -66,20 +66,21 @@ def _save_scenario(
     scenario_id: str,
     fixtures: list[dict[str, object]],
     data_dependency: str = "interactive",
+    **extra: object,
 ) -> None:
-    persistence.save_scenario_payload(
-        {
-            "scenario_id": scenario_id,
-            "feature_id": "ft1",
-            "review_status": "auto_validated",
-            "priority": "P0",
-            "difficulty": "simple",
-            "is_mutation": False,
-            "title": "t",
-            "data_dependency": data_dependency,
-            "fixtures": fixtures,
-        }
-    )
+    payload: dict[str, object] = {
+        "scenario_id": scenario_id,
+        "feature_id": "ft1",
+        "review_status": "auto_validated",
+        "priority": "P0",
+        "difficulty": "simple",
+        "is_mutation": False,
+        "title": "t",
+        "data_dependency": data_dependency,
+        "fixtures": fixtures,
+    }
+    payload.update(extra)
+    persistence.save_scenario_payload(payload)
 
 
 class FakeCreateClient:
@@ -309,6 +310,75 @@ async def test_binding_status_missing_element_not_ready(
     assert status.ready is False
     assert status.slots[0].bound is True
     assert status.slots[0].exists is False
+
+
+@pytest.mark.anyio
+async def test_binding_status_incomplete_attributes_not_ready(
+    db: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _save_scenario(
+        "sc_attr",
+        [{"ref": "target_card", "kind": "card"}],
+        test_data={
+            "a": "{{fixture.target_card.title}}",
+            "b": "{{fixture.target_card.list_name}}",
+        },
+    )
+    persistence.save_fixture_binding(
+        {
+            "scenario_id": "sc_attr",
+            "target_app_url": TARGET,
+            "ref": "target_card",
+            "entity_kind": "card",
+            "entity_id": "1000",
+            "resolved_values": {"title": "完成季度报告"},
+            "created_by_specpilot": False,
+            "bound_at": "2026-06-18T00:00:00+00:00",
+        }
+    )
+    monkeypatch.setattr(
+        binding_service, "build_fourga_client", lambda _=None: FakeInventoryClient()
+    )
+
+    status = await get_binding_status("sc_attr", settings=_settings(db))
+
+    assert status.ready is False
+    assert status.slots[0].bound is True
+    assert status.slots[0].exists is False
+
+
+@pytest.mark.anyio
+async def test_binding_status_complete_attributes_ready(
+    db: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _save_scenario(
+        "sc_attr2",
+        [{"ref": "target_card", "kind": "card"}],
+        test_data={
+            "a": "{{fixture.target_card.title}}",
+            "b": "{{fixture.target_card.list_name}}",
+        },
+    )
+    persistence.save_fixture_binding(
+        {
+            "scenario_id": "sc_attr2",
+            "target_app_url": TARGET,
+            "ref": "target_card",
+            "entity_kind": "card",
+            "entity_id": "1000",
+            "resolved_values": {"title": "完成季度报告", "list_name": "To Do"},
+            "created_by_specpilot": False,
+            "bound_at": "2026-06-18T00:00:00+00:00",
+        }
+    )
+    monkeypatch.setattr(
+        binding_service, "build_fourga_client", lambda _=None: FakeInventoryClient()
+    )
+
+    status = await get_binding_status("sc_attr2", settings=_settings(db))
+
+    assert status.ready is True
+    assert status.slots[0].exists is True
 
 
 # --- HTTP routes -----------------------------------------------------------

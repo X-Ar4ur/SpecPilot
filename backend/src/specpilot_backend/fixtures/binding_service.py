@@ -17,6 +17,7 @@ from specpilot_backend.fixtures.models import (
     ScenarioFixtureBinding,
 )
 from specpilot_backend.fixtures.tokens import (
+    find_fixture_tokens,
     resolve_fixture_tokens,
     unresolved_fixture_tokens,
 )
@@ -131,19 +132,26 @@ async def get_binding_status(
                 binding_payload
             )
 
+    required_attrs_by_ref: dict[str, set[str]] = {}
+    for ref, attr in find_fixture_tokens(scenario):
+        required_attrs_by_ref.setdefault(ref, set()).add(attr)
+
     existing_ids = (
         await _existing_entity_ids(resolved_settings) if bindings_by_ref else set()
     )
     slot_states: list[FixtureSlotBindingState] = []
     for slot in slots:
         binding = bindings_by_ref.get(slot.ref)
-        exists = binding is not None and binding.entity_id in existing_ids
+        entity_present = binding is not None and binding.entity_id in existing_ids
+        attrs_present = binding is not None and required_attrs_by_ref.get(
+            slot.ref, set()
+        ) <= set(binding.resolved_values.keys())
         slot_states.append(
             FixtureSlotBindingState(
                 ref=slot.ref,
                 kind=slot.kind,
                 bound=binding is not None,
-                exists=exists,
+                exists=entity_present and attrs_present,
                 binding=binding,
             )
         )

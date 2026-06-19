@@ -16,6 +16,15 @@ ReviewStatus = Literal["auto_validated", "needs_review", "rejected"]
 DataDependency = Literal["none", "self_seeding", "interactive"]
 FixtureKind = Literal["project", "board", "list", "card"]
 
+# Attributes a fixture token may reference per kind. Bindings resolve exactly
+# these from the 4ga inventory, so generation must not reference others.
+FIXTURE_ATTRIBUTES: dict[str, tuple[str, ...]] = {
+    "card": ("title", "list_name", "board_name", "project_name"),
+    "list": ("name", "board_name", "project_name"),
+    "board": ("name", "project_name"),
+    "project": ("name",),
+}
+
 FORBIDDEN_SCENARIO_FIELDS = {
     "locator",
     "selector",

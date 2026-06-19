@@ -36,6 +36,14 @@ test("binding dialog shows remembered bindings and re-prompts when stale", () =>
   assert.match(dialog, /已失效/);
 });
 
+test("binding dialog captures full element attributes, not just title", () => {
+  // Bindings must carry list_name/board_name/project_name so every fixture
+  // token resolves, not only {{fixture.ref.title}}.
+  assert.match(dialog, /attributes: candidate\.attributes/);
+  assert.match(dialog, /list_name: list\.name/);
+  assert.match(dialog, /board_name: board\.name/);
+});
+
 test("binding dialog runs only once all slots are ready", () => {
   assert.match(dialog, /开始运行/);
   assert.match(dialog, /disabled=\{!ready/);

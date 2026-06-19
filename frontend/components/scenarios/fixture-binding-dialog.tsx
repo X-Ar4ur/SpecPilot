@@ -20,10 +20,17 @@ const kindLabels: Record<FixtureKind, string> = {
   card: "Card",
 };
 
-type Candidate = { id: string; name: string; path: string };
+type Candidate = {
+  id: string;
+  name: string;
+  path: string;
+  attributes: Record<string, string>;
+};
 
 // Flatten the Project -> Board -> List -> Card inventory tree to the elements
-// of a single kind, each with a breadcrumb path for disambiguation.
+// of a single kind. Each candidate carries the full attribute set a fixture
+// token may reference (title/name + ancestor names) so bindings resolve every
+// token, not just the title.
 function candidatesForKind(
   inventory: FixtureInventory | undefined,
   kind: FixtureKind,
@@ -31,18 +38,37 @@ function candidatesForKind(
   const out: Candidate[] = [];
   for (const project of inventory?.projects ?? []) {
     if (kind === "project") {
-      out.push({ id: project.id, name: project.name, path: "" });
+      out.push({
+        id: project.id,
+        name: project.name,
+        path: "",
+        attributes: { name: project.name },
+      });
       continue;
     }
     for (const board of project.boards) {
       if (kind === "board") {
-        out.push({ id: board.id, name: board.name, path: project.name });
+        out.push({
+          id: board.id,
+          name: board.name,
+          path: project.name,
+          attributes: { name: board.name, project_name: project.name },
+        });
         continue;
       }
       for (const list of board.lists) {
         const listPath = `${project.name} / ${board.name}`;
         if (kind === "list") {
-          out.push({ id: list.id, name: list.name, path: listPath });
+          out.push({
+            id: list.id,
+            name: list.name,
+            path: listPath,
+            attributes: {
+              name: list.name,
+              board_name: board.name,
+              project_name: project.name,
+            },
+          });
           continue;
         }
         for (const card of list.cards) {
@@ -50,6 +76,12 @@ function candidatesForKind(
             id: card.id,
             name: card.name,
             path: `${listPath} / ${list.name}`,
+            attributes: {
+              title: card.name,
+              list_name: list.name,
+              board_name: board.name,
+              project_name: project.name,
+            },
           });
         }
       }
@@ -167,6 +199,7 @@ function SlotBinder({
 
   const candidates = candidatesForKind(inventory, slot.kind);
   const lists = candidatesForKind(inventory, "list");
+  const selectedList = lists.find((list) => list.id === parentId);
   const boundValue = slot.binding?.resolved_values?.title;
   const boundTitle =
     typeof boundValue === "string" ? boundValue : slot.binding?.entity_id;
@@ -223,7 +256,7 @@ function SlotBinder({
                     mode: "existing",
                     kind: slot.kind,
                     entity_id: candidate.id,
-                    attributes: { title: candidate.name },
+                    attributes: candidate.attributes,
                   })
                 }
               >
@@ -267,7 +300,12 @@ function SlotBinder({
                 mode: "create",
                 kind: "card",
                 parent_id: parentId,
-                attributes: { title: newTitle },
+                attributes: {
+                  title: newTitle,
+                  list_name: selectedList?.name ?? "",
+                  board_name: selectedList?.attributes.board_name ?? "",
+                  project_name: selectedList?.attributes.project_name ?? "",
+                },
               })
             }
           >

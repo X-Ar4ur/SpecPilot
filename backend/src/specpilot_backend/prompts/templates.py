@@ -101,6 +101,7 @@ Rules:
 - Classify data_dependency: "self_seeding" when the scenario creates the data it then checks (create/edit); "interactive" when it depends on a pre-existing element (open/view/search/filter/move/delete); "none" when no specific element is required.
 - For "self_seeding" and "none" scenarios set "fixtures": [] and never use fixture tokens.
 - For "interactive" scenarios declare each required element in "fixtures" (ref, kind, optional parent_ref, required_attrs, allow_create) and reference its value with {{fixture.<ref>.<attr>}} tokens in test_data, steps, and expectations. Never hardcode a concrete element value that may be absent from the target instance.
+- Fixture tokens may only use these attributes: card -> title, list_name, board_name, project_name; list -> name, board_name, project_name; board -> name, project_name; project -> name. Do not invent other attribute names.
 - Mark unsupported or weak-evidence scenarios as rejected.
 - Do not include secrets, credentials, API keys, or test passwords.
 """

@@ -7,7 +7,11 @@ from pydantic import ValidationError
 from specpilot_backend.fixtures.tokens import find_fixture_tokens
 from specpilot_backend.ingestion.chunker import ManualChunk
 from specpilot_backend.models.features import Feature
-from specpilot_backend.models.scenarios import TestScenario, find_forbidden_field
+from specpilot_backend.models.scenarios import (
+    FIXTURE_ATTRIBUTES,
+    TestScenario,
+    find_forbidden_field,
+)
 
 
 class EvidenceValidationError(ValueError):
@@ -88,6 +92,14 @@ def validate_fixture_consistency(
             raise FixtureConsistencyError(
                 f"fixture tokens reference undeclared slots: {', '.join(undeclared)}"
             )
+        kind_by_ref = {slot.ref: slot.kind for slot in scenario.fixtures}
+        for ref, attr in find_fixture_tokens(payload):
+            allowed = FIXTURE_ATTRIBUTES.get(kind_by_ref.get(ref, ""), ())
+            if attr not in allowed:
+                raise FixtureConsistencyError(
+                    f"fixture token '{ref}.{attr}' uses an unsupported attribute; "
+                    f"allowed for this kind: {', '.join(allowed) or '(none)'}"
+                )
         return
 
     if scenario.fixtures:
