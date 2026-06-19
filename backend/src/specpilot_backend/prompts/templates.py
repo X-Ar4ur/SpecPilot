@@ -55,7 +55,35 @@ Return only JSON with this shape:
       ],
       "max_steps": 10,
       "requires_visual_check": false,
-      "review_status": "auto_validated"
+      "review_status": "auto_validated",
+      "data_dependency": "self_seeding",
+      "fixtures": []
+    },
+    {
+      "scenario_id": "sc_open_card_001",
+      "feature_id": "ft_card_open",
+      "title": "从 List View 打开对应 Card",
+      "priority": "P0",
+      "difficulty": "simple",
+      "source_urls": ["https://docs.4gaboards.com/cards/open"],
+      "evidence_quotes": ["..."],
+      "preconditions": ["List View 中存在一张可识别标题的 Card"],
+      "test_data": {"card_title": "{{fixture.target_card.title}}"},
+      "steps": [{"order": 1, "action": "在 List View 中打开标题为 {{fixture.target_card.title}} 的 Card"}],
+      "expectations": [
+        {
+          "type": "element_visible",
+          "description": "对应 Card 的详情视图被打开并显示标题",
+          "params": {"text": "{{fixture.target_card.title}}"}
+        }
+      ],
+      "max_steps": 6,
+      "requires_visual_check": false,
+      "review_status": "auto_validated",
+      "data_dependency": "interactive",
+      "fixtures": [
+        {"ref": "target_card", "kind": "card", "required_attrs": ["title"], "allow_create": true}
+      ]
     }
   ]
 }
@@ -67,6 +95,9 @@ Rules:
 - Every evidence quote must be copied from supplied evidence.
 - Prefer 2-6 user action steps.
 - Use semantic expectation only when DOM/text/URL checks are insufficient.
+- Classify data_dependency: "self_seeding" when the scenario creates the data it then checks (create/edit); "interactive" when it depends on a pre-existing element (open/view/search/filter/move/delete); "none" when no specific element is required.
+- For "self_seeding" and "none" scenarios set "fixtures": [] and never use fixture tokens.
+- For "interactive" scenarios declare each required element in "fixtures" (ref, kind, optional parent_ref, required_attrs, allow_create) and reference its value with {{fixture.<ref>.<attr>}} tokens in test_data, steps, and expectations. Never hardcode a concrete element value that may be absent from the target instance.
 - Mark unsupported or weak-evidence scenarios as rejected.
 - Do not include secrets, credentials, API keys, or test passwords.
 """

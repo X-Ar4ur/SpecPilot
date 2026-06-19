@@ -86,6 +86,12 @@ def _scenario_for_feature(feature: dict[str, object]) -> dict[str, Any]:
         "requires_visual_check": False,
         "review_status": "auto_validated",
         "is_mutation": False,
+        "data_dependency": (
+            "self_seeding"
+            if module == "Card" and "create" in title.lower()
+            else "none"
+        ),
+        "fixtures": [],
     }
 
 

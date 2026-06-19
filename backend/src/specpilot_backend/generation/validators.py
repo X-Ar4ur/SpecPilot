@@ -4,6 +4,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
+from specpilot_backend.fixtures.tokens import find_fixture_tokens
 from specpilot_backend.ingestion.chunker import ManualChunk
 from specpilot_backend.models.features import Feature
 from specpilot_backend.models.scenarios import TestScenario, find_forbidden_field
@@ -15,6 +16,10 @@ class EvidenceValidationError(ValueError):
 
 class ZeroLocatorValidationError(ValueError):
     """Raised when generated scenarios contain forbidden locator-like fields."""
+
+
+class FixtureConsistencyError(ValueError):
+    """Raised when a scenario's fixtures and fixture tokens are inconsistent."""
 
 
 def validate_evidence_quotes(
@@ -61,8 +66,38 @@ def validate_scenario_payload(
         scenario = TestScenario.model_validate(payload)
     except ValidationError as exc:
         raise ZeroLocatorValidationError(str(exc)) from exc
+    validate_fixture_consistency(payload, scenario)
     validate_evidence_quotes(scenario.evidence_quotes, source_chunks)
     return scenario
+
+
+def validate_fixture_consistency(
+    payload: dict[str, Any],
+    scenario: TestScenario,
+) -> None:
+    declared_refs = {slot.ref for slot in scenario.fixtures}
+    token_refs = {ref for ref, _ in find_fixture_tokens(payload)}
+
+    if scenario.data_dependency == "interactive":
+        if not scenario.fixtures:
+            raise FixtureConsistencyError(
+                "interactive scenario must declare at least one fixture slot"
+            )
+        undeclared = sorted(token_refs - declared_refs)
+        if undeclared:
+            raise FixtureConsistencyError(
+                f"fixture tokens reference undeclared slots: {', '.join(undeclared)}"
+            )
+        return
+
+    if scenario.fixtures:
+        raise FixtureConsistencyError(
+            "fixtures are only allowed in interactive scenarios"
+        )
+    if token_refs:
+        raise FixtureConsistencyError(
+            "fixture tokens are only allowed in interactive scenarios"
+        )
 
 
 def _normalize_feature_module(value: object) -> str:
