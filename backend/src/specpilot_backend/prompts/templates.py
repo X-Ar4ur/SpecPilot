@@ -93,7 +93,10 @@ Rules:
 - Step actions must be natural-language user intentions, not DOM targeting instructions.
 - Every scenario must include evidence quotes from the supplied chunks.
 - Every evidence quote must be copied from supplied evidence.
-- Prefer 2-6 user action steps.
+- Prefer 2-6 user action steps; steps must never be empty.
+- max_steps must be a positive integer (10 for simple, 20 for medium, 35 for hard).
+- Allowed expectation types are exactly: element_visible, text_present, url_match, element_state, containment, semantic. Never invent other types such as element_not_visible.
+- To assert that something is absent, removed, or hidden, use {"type": "text_present", "params": {"text": "...", "not_present": true}}.
 - Use semantic expectation only when DOM/text/URL checks are insufficient.
 - Classify data_dependency: "self_seeding" when the scenario creates the data it then checks (create/edit); "interactive" when it depends on a pre-existing element (open/view/search/filter/move/delete); "none" when no specific element is required.
 - For "self_seeding" and "none" scenarios set "fixtures": [] and never use fixture tokens.
